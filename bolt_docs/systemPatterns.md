@@ -1,4 +1,4 @@
-# System Deployment Patterns
+# System Patterns
 
 ## Continuous Integration/Continuous Deployment (CI/CD)
 - Version Control: GitHub
@@ -10,6 +10,7 @@
 - Uses Vite environment variables
 - Supabase credentials managed via environment variables
 - Supports local and production environments
+- Base URL configuration for proper asset loading in production
 
 ## Deployment Workflow
 1. Push changes to GitHub master branch
@@ -21,9 +22,19 @@
 ## Key Configuration Files
 - `netlify.toml`: Defines build and deployment settings
 - `.env`: Stores environment-specific variables
+- `vite.config.ts`: Configures build and development settings
 - `README.md`: Provides deployment and setup instructions
 
 ## Environment Variable Management
 - Supabase credentials stored as Vite-prefixed variables
 - Separate variables for development and production
 - Sensitive information kept out of version control
+- Environment variables configured in Netlify dashboard for production
+
+## Error Handling Patterns
+- Try/catch blocks for async operations
+- Detailed error logging to console
+- User-friendly error messages via alerts
+- Verification of database operation success
+- React useCallback for memoizing functions that trigger API calls
+- Proper dependency management in useEffect hooks
