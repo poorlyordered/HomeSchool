@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { PlusCircle, Pencil, Trash2, Upload, Search, Filter } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import type { Student, User } from '../types';
+import type { User } from '../types';
 
 interface StudentData {
   id: string;
@@ -37,11 +37,7 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
     return matchesSearch && matchesFilter;
   });
 
-  useEffect(() => {
-    loadStudents();
-  }, [user.id]);
-
-  async function loadStudents() {
+  const loadStudents = useCallback(async () => {
     const { data, error } = await supabase
       .from('students')
       .select(`
@@ -63,7 +59,11 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
       graduation_date: student.graduation_date
     })) || []);
     setLoading(false);
-  }
+  }, [user.id]);
+
+  useEffect(() => {
+    loadStudents();
+  }, [loadStudents]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -129,29 +129,41 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
     if (!isEditingStudent) return;
 
     setLoading(true);
-    const { error } = await supabase
-      .from('students')
-      .update({
-        name: formData.name,
-        student_id: formData.studentId,
-        birth_date: formData.birthDate,
-        graduation_date: formData.graduationDate
-      })
-      .eq('id', isEditingStudent);
+    try {
+      const { data, error } = await supabase
+        .from('students')
+        .update({
+          name: formData.name,
+          student_id: formData.studentId,
+          birth_date: formData.birthDate,
+          graduation_date: formData.graduationDate
+        })
+        .eq('id', isEditingStudent)
+        .select();
 
-    if (error) {
-      console.error('Error updating student:', error);
-    } else {
-      setIsEditingStudent(null);
-      setFormData({
-        name: '',
-        studentId: '',
-        birthDate: '',
-        graduationDate: ''
-      });
-      loadStudents();
+      if (error) {
+        console.error('Error updating student:', error);
+        alert(`Failed to update student: ${error.message}`);
+      } else if (data && data.length > 0) {
+        console.log('Student updated successfully:', data[0]);
+        setIsEditingStudent(null);
+        setFormData({
+          name: '',
+          studentId: '',
+          birthDate: '',
+          graduationDate: ''
+        });
+        await loadStudents();
+      } else {
+        console.error('No data returned after update');
+        alert('Failed to update student: No data returned');
+      }
+    } catch (err) {
+      console.error('Exception during student update:', err);
+      alert(`An error occurred: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const startEditingStudent = (student: StudentData) => {
