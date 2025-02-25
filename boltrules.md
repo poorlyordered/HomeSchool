@@ -1,0 +1,236 @@
+# Homeschool Transcript Tracking Application
+
+Every time you choose to apply a rule(s), explicitly state the rule(s) in the output. You can abbreviate the rule description to a single word or phrase.
+
+## What We're Building
+This homeschool transcript management system helps guardians maintain official academic records for homeschooled students. Key features include:
+
+- School information management
+- Course and grade tracking with GPA calculation
+- Standardized test score recording
+- Official PDF transcript generation
+- Role-based access for guardians and students
+- Secure data management and access controls
+
+## Code Style and Structure
+- Write concise, technical TypeScript code with accurate examples
+- Use functional React components with hooks
+- Prefer custom hooks for shared logic
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError)
+- Structure repository files as follows:
+```
+src/
+├── components/     # React components
+│   ├── ui/        # Reusable UI components
+│   └── layout/    # Layout components 
+├── hooks/         # Custom React hooks
+├── pages/         # Page components
+├── lib/           # External integrations
+├── types/         # TypeScript types
+└── utils/         # Helper functions
+```
+
+## Tech Stack
+### Frontend
+- React 18.3.1 with TypeScript 5.5.3
+- Vite 5.4.2 for development and building
+- Tailwind CSS 3.4.1 for styling
+- React Router 6.22.2 for navigation
+- Lucide React 0.344.0 for icons
+- React PDF Renderer 3.4.0 for transcript generation
+
+### Backend
+- Supabase for:
+  - PostgreSQL database
+  - Row Level Security (RLS)
+  - Authentication
+  - Real-time updates
+
+## Naming Conventions
+### Component Files
+- Use PascalCase for component files (e.g., Button.tsx, TeamProfile.tsx)
+- Group related components with descriptive prefixes (e.g., TeamList.tsx)
+- Use suffixes to indicate component type when needed (e.g., UserList.tsx, UserListItem.tsx)
+
+### Component Directories
+- Use kebab-case for directories (e.g., components/layout/, components/ui/)
+- Group components by feature or type:
+  - auth/ - Authentication and user management
+  - school/ - School information management
+  - courses/ - Course and grade tracking
+  - tests/ - Test score management
+  - transcripts/ - PDF generation and management
+  - ui/ - Shared UI components
+  - layout/ - Layout components
+
+### Props and Types
+- Use PascalCase for type and interface names (e.g., TeamMember, ApplicationStatus)
+- Use camelCase for prop names (e.g., maxWidth, showIcon)
+- Boolean props should use is/has/should prefixes (e.g., isLoading, hasError)
+- Event handlers should use handle prefix (e.g., handleSubmit, handleClick)
+
+## React Component Structure
+### Component Template
+```tsx
+import React from 'react'
+import type { ComponentProps } from '@/types'
+
+interface Props extends ComponentProps {
+  title: string
+  isLoading?: boolean
+  onAction: () => void
+}
+
+export function ExampleComponent({ 
+  title,
+  isLoading = false,
+  onAction 
+}: Props) {
+  // 1. Hooks
+  const [state, setState] = useState(false)
+
+  // 2. Derived state
+  const classes = cn('base-class', {
+    'is-loading': isLoading
+  })
+
+  // 3. Effects
+  useEffect(() => {
+    // Setup
+    return () => {
+      // Cleanup
+    }
+  }, [])
+
+  // 4. Event handlers
+  const handleClick = () => {
+    setState(!state)
+    onAction()
+  }
+
+  // 5. Render
+  return (
+    <div className={classes}>
+      <h2>{title}</h2>
+      {/* Component content */}
+    </div>
+  )
+}
+```
+
+## State Management
+- Use React hooks for local state
+- Use custom hooks for shared logic
+- Use Supabase for:
+  - Data persistence
+  - Real-time updates
+  - Authentication state
+  - User roles and permissions
+
+## Syntax and Formatting
+- Use TypeScript for type safety
+- Follow React hooks patterns
+- Use proper TypeScript interfaces for props
+- Use type inference where possible
+- Avoid any type
+
+## UI and Styling
+- Use Tailwind CSS for styling
+- Follow utility-first CSS approach
+- Ensure responsive design
+- Use Lucide React for icons
+- Maintain consistent spacing and layout
+
+## Error Handling
+- Implement error boundaries
+- Use try/catch blocks appropriately
+- Provide user-friendly error messages
+- Handle network failures gracefully
+- Log errors for debugging
+
+## Testing
+### Unit Tests
+- Co-locate test files with components
+- Follow Arrange-Act-Assert pattern
+- Test both success and error cases
+- Test component props and events
+
+## Security
+- Use Supabase Auth for authentication
+- Implement Row Level Security
+- Enforce role-based access control
+- Protect sensitive student data
+- Validate guardian-student relationships
+- Sanitize user inputs
+- Implement proper data access policies
+
+## Git Usage [VCS-RULES]
+Commit Message Prefixes:
+- "fix:"    for bug fixes
+- "feat:"   for new features
+- "mem:"    for Memory Bank updates
+- "perf:"   for performance improvements
+- "docs:"   for documentation changes
+- "style:"  for formatting changes
+- "refactor:" for code refactoring
+- "test:"   for adding missing tests
+- "chore:"  for maintenance tasks
+
+Rules:
+- Use lowercase for commit messages
+- Keep summary under 72 characters
+- Include affected components in description
+- Reference Memory Bank sections when applicable
+- Add validation tags: [CONFIRM], [VERIFY], [VALIDATE]
+- Include rule abbreviations: (AUTH-RULES), (ARCH-RULES), etc.
+
+## Memory Bank Compliance [CLI-RULES]
+1. Explicitly reference documentation sections using:
+   ```plaintext
+   [Check productContext.md#feature-x]
+   [Verify progress.md milestone-a] 
+   [Confirm systemPatterns.md#data-flow]
+   ```
+2. Validate against context files before acting:
+   ```plaintext
+   {Check techContext.md#api-rules}
+   {Validate against systemPatterns.md}
+   {Enforce architecture guidelines}
+   ```
+3. Update Memory Bank after significant changes:
+   ```plaintext
+   {Update activeContext.md with current task}
+   {Add to progress.md completed items}
+   {Record decisions in systemPatterns.md}
+   ```
+
+## Documentation
+- Maintain clear README with setup instructions
+- Document API interactions and data flows
+- Document:
+  - Component props and types
+  - Database schema and relationships
+  - Security policies and access controls
+  - PDF generation process
+  - Setup instructions for development
+- Don't include comments unless it's for complex logic
+- Add validation triggers:  
+  ```plaintext
+  [CONFIRM] Does this align with productContext?  
+  [VERIFY] Cross-check with systemPatterns  
+  [VALIDATE] Against progress.md goals
+  ```
+- Include rule-specific references:  
+  ```plaintext
+  (AUTH-RULES) Validate session tokens  
+  (ARCH-RULES) Follow component patterns  
+  (SEC-RULES) Sanitize inputs
+  ```
+
+## Development Workflow
+- Use proper version control
+- Implement proper code review process
+- Test in multiple environments
+- Follow semantic versioning for releases
+- Maintain changelog
+- Update Memory Bank regularly
