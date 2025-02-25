@@ -1,90 +1,29 @@
-# System Architecture
+# System Deployment Patterns
 
-## Frontend Architecture
-1. React Components
-   - Functional components with hooks
-   - TypeScript for type safety
-   - Tailwind CSS for styling
-   - Lucide React for icons
+## Continuous Integration/Continuous Deployment (CI/CD)
+- Version Control: GitHub
+- Hosting Platform: Netlify
+- Build Tool: Vite
+- Framework: React with TypeScript
 
-2. State Management
-   - React hooks for local state
-   - Custom hooks for shared logic
-   - Event-based updates
-   - Real-time synchronization
+## Environment Configuration
+- Uses Vite environment variables
+- Supabase credentials managed via environment variables
+- Supports local and production environments
 
-3. Form Handling
-   - Controlled inputs
-   - Validation patterns
-   - Real-time error feedback
-   - Enhanced loading states
-   - File upload handling
-   - Bulk data processing
+## Deployment Workflow
+1. Push changes to GitHub master branch
+2. Netlify automatically detects changes
+3. Netlify builds project using `npm run build`
+4. Deploys built files to production environment
+5. Serves application from `dist` directory
 
-4. Data Flow
-   - Parent-child props
-   - Event callbacks
-   - Custom events
-   - Real-time updates
-   - Search and filter patterns
-   - Data transformation
+## Key Configuration Files
+- `netlify.toml`: Defines build and deployment settings
+- `.env`: Stores environment-specific variables
+- `README.md`: Provides deployment and setup instructions
 
-## Backend Architecture
-1. Database (Supabase)
-   - PostgreSQL database
-   - Row Level Security (RLS)
-   - Role-based policies
-   - Real-time subscriptions
-
-2. Authentication
-   - Supabase Auth
-   - JWT tokens
-   - Session persistence
-   - Profile management
-
-3. Data Models
-   - Profiles
-   - Schools
-   - Students
-   - Courses
-   - Test Scores
-
-## Security Patterns
-1. Row Level Security
-   - Table-level policies
-   - Role-based access control
-   - Owner-only modifications
-   - Relationship-based access
-
-2. Authentication Flow
-   - Email/password authentication
-   - Profile creation
-   - Role assignment
-   - Session management
-
-3. Data Validation
-   - Input sanitization
-   - Range validation
-   - Type checking
-   - Error handling
-
-## Form Patterns
-1. Validation
-   - Field-level validation
-   - Form-level validation
-   - Real-time feedback
-   - Error messages
-
-2. User Feedback
-   - Loading states
-   - Success messages
-   - Error notifications
-   - Visual indicators
-
-3. Data Entry
-   - Controlled inputs
-   - Type-specific fields
-   - CSV data processing
-   - Bulk data handling
-   - Search functionality
-   - Filter patterns
+## Environment Variable Management
+- Supabase credentials stored as Vite-prefixed variables
+- Separate variables for development and production
+- Sensitive information kept out of version control
