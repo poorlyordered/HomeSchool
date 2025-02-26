@@ -13,6 +13,8 @@ export function AuthForm({ mode, onSuccess }: AuthFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const [verificationSent, setVerificationSent] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -21,13 +23,8 @@ export function AuthForm({ mode, onSuccess }: AuthFormProps) {
     try {
       if (mode === 'signup') {
         await signUp(email, password, role);
-        // After signup, sign in automatically
-        try {
-          await signIn(email, password);
-          onSuccess();
-        } catch (err) {
-          setError('Account created! Please check your email for verification.');
-        }
+        setVerificationSent(true);
+        setError('Account created! Please check your email for verification.');
       } else {
         await signIn(email, password);
         onSuccess();
@@ -101,13 +98,60 @@ export function AuthForm({ mode, onSuccess }: AuthFormProps) {
         <div className="text-red-600 text-sm">{error}</div>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-      >
-        {loading ? 'Loading...' : mode === 'signin' ? 'Sign In' : 'Sign Up'}
-      </button>
+      {mode === 'signin' && (
+        <div className="flex items-center justify-end">
+          <div className="text-sm">
+            <a href="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
+              Forgot your password?
+            </a>
+          </div>
+        </div>
+      )}
+
+      {mode === 'signin' && (
+        <div className="flex items-center justify-center mt-2">
+          <div className="text-sm">
+            <span className="text-gray-500">Don't have an account? </span>
+            <a href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
+              Sign up
+            </a>
+          </div>
+        </div>
+      )}
+
+      {mode === 'signup' && (
+        <div className="flex items-center justify-center mt-2">
+          <div className="text-sm">
+            <span className="text-gray-500">Already have an account? </span>
+            <a href="/signin" className="font-medium text-blue-600 hover:text-blue-500">
+              Sign in
+            </a>
+          </div>
+        </div>
+      )}
+
+      {verificationSent ? (
+        <div className="text-center">
+          <p className="text-green-600 mb-4">
+            Verification email sent! Please check your inbox and click the verification link.
+          </p>
+          <button
+            type="button"
+            onClick={() => window.location.href = '/signin'}
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Go to Sign In
+          </button>
+        </div>
+      ) : (
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+        >
+          {loading ? 'Loading...' : mode === 'signin' ? 'Sign In' : 'Sign Up'}
+        </button>
+      )}
     </form>
   );
 }

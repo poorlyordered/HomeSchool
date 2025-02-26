@@ -1,11 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { getCurrentUser } from './lib/auth';
 import { Notification } from './components/Notification';
 import { LandingPage } from './components/LandingPage';
 import { AuthForm } from './components/AuthForm';
 import { Dashboard } from './components/Dashboard';
+import { EmailVerification } from './components/EmailVerification';
+import { ForgotPassword } from './components/ForgotPassword';
+import { ResetPassword } from './components/ResetPassword';
+import { SessionExpired } from './components/SessionExpired';
+import { supabase } from './lib/supabase';
 import type { User } from './types';
+
+// Session timeout in milliseconds (30 minutes)
+const SESSION_TIMEOUT = 30 * 60 * 1000;
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -23,7 +31,56 @@ function App() {
       setLoading(false);
     };
     initAuth();
+
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+        } else if (event === 'SIGNED_IN' && session) {
+          const user = await getCurrentUser();
+          setUser(user);
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
+
+  // Monitor for session expiration
+  useEffect(() => {
+    if (!user) return;
+
+    let inactivityTimer: NodeJS.Timeout;
+
+    const resetTimer = () => {
+      if (inactivityTimer) clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(() => {
+        // Session expired
+        supabase.auth.signOut();
+        window.location.href = '/session-expired';
+      }, SESSION_TIMEOUT);
+    };
+
+    // Set up event listeners to reset the timer on user activity
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    events.forEach(event => {
+      window.addEventListener(event, resetTimer);
+    });
+
+    // Initialize the timer
+    resetTimer();
+
+    // Clean up
+    return () => {
+      if (inactivityTimer) clearTimeout(inactivityTimer);
+      events.forEach(event => {
+        window.removeEventListener(event, resetTimer);
+      });
+    };
+  }, [user]);
 
   const handleAuthSuccess = async () => {
     setIsAuthenticating(true);
@@ -56,6 +113,10 @@ function App() {
       )}
       <Routes>
         <Route path="/" element={user ? <Dashboard user={user} /> : <LandingPage />} />
+        <Route path="/auth/callback" element={<EmailVerification />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/session-expired" element={<SessionExpired />} />
         <Route
           path="/signin"
           element={

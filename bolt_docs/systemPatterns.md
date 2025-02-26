@@ -31,10 +31,19 @@
 - Sensitive information kept out of version control
 - Environment variables configured in Netlify dashboard for production
 
+## Authentication Patterns
+- Email/password authentication via Supabase
+- Email verification flow with dedicated verification page
+- Password recovery with reset email and token validation
+- Session management with automatic timeout detection
+- Role-based access control (guardian/student)
+- Secure token handling for authentication operations
+
 ## Error Handling Patterns
 - Try/catch blocks for async operations
 - Detailed error logging to console
-- User-friendly error messages via alerts
+- User-friendly error messages via notification components
+- Specific error messages for different authentication failures
 - Verification of database operation success
 - React useCallback for memoizing functions that trigger API calls
 - Proper dependency management in useEffect hooks
