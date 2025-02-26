@@ -37,6 +37,11 @@
 - Added component tests for AuthForm
 - Configured Husky for Git hooks to run tests and linting before commits and pushes
 - Fixed TypeScript warning in AuthForm.test.tsx by removing unnecessary React import
+- Fixed account settings profile name update functionality:
+  - Added 'name' column to profiles table in the database
+  - Updated Profile type to include the 'name' field
+  - Enhanced sign-up flow to collect user names
+  - Updated AuthForm component and tests to support name collection
 
 ## Next Steps
 
