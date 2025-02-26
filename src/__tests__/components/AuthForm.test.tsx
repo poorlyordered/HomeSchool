@@ -83,6 +83,7 @@ describe("AuthForm Component", () => {
     it("renders sign up form correctly", () => {
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
       expect(screen.getByText(/role/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/guardian/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/student/i)).toBeInTheDocument();
@@ -102,6 +103,7 @@ describe("AuthForm Component", () => {
         "newuser@example.com",
       );
       await userEvent.type(screen.getByLabelText(/password/i), "password123");
+      await userEvent.type(screen.getByLabelText(/name/i), "John Doe");
 
       // Select role (guardian is default)
       expect(screen.getByLabelText(/guardian/i)).toBeChecked();
@@ -115,6 +117,7 @@ describe("AuthForm Component", () => {
           "newuser@example.com",
           "password123",
           "guardian",
+          "John Doe",
         );
         // onSuccess should not be called for sign up (verification required)
         expect(mockOnSuccess).not.toHaveBeenCalled();
@@ -146,6 +149,7 @@ describe("AuthForm Component", () => {
         "student@example.com",
       );
       await userEvent.type(screen.getByLabelText(/password/i), "password123");
+      await userEvent.type(screen.getByLabelText(/name/i), "Student Name");
 
       // Submit the form
       fireEvent.click(screen.getByRole("button", { name: /sign up/i }));
@@ -156,6 +160,7 @@ describe("AuthForm Component", () => {
           "student@example.com",
           "password123",
           "student",
+          "Student Name",
         );
       });
     });
@@ -171,6 +176,7 @@ describe("AuthForm Component", () => {
         "existing@example.com",
       );
       await userEvent.type(screen.getByLabelText(/password/i), "password123");
+      await userEvent.type(screen.getByLabelText(/name/i), "Existing User");
 
       // Submit the form
       fireEvent.click(screen.getByRole("button", { name: /sign up/i }));

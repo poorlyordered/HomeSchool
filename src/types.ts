@@ -1,7 +1,8 @@
 export interface Profile {
   id: string;
   email: string;
-  role: 'guardian' | 'student';
+  role: "guardian" | "student";
+  name?: string;
   created_at: string;
 }
 
@@ -31,7 +32,7 @@ export interface Course {
   name: string;
   gradeLevel: 9 | 10 | 11 | 12;
   academicYear: string;
-  semester: 'Fall' | 'Spring';
+  semester: "Fall" | "Spring";
   creditHours: number;
   grade: string;
 }
@@ -43,7 +44,7 @@ export interface TranscriptMeta {
 
 export interface TestScore {
   id: string;
-  type: 'ACT' | 'SAT';
+  type: "ACT" | "SAT";
   date: string;
   scores: {
     total: number;
