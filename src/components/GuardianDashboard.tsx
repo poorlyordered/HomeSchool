@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { GraduationCap, School as SchoolIcon, Phone, MapPin, FileDown, LogOut } from 'lucide-react';
 import { Users } from 'lucide-react';
 import { signOut } from '../lib/auth';
-import { useNavigate } from 'react-router-dom';
 import { pdf } from '@react-pdf/renderer';
 import { TranscriptPDF } from './TranscriptPDF';
 import { supabase } from '../lib/supabase';
@@ -17,7 +16,6 @@ interface GuardianDashboardProps {
 }
 
 export function GuardianDashboard({ user }: GuardianDashboardProps) {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [needsSetup, setNeedsSetup] = useState(false);
   const [showStudentManagement, setShowStudentManagement] = useState(false);
@@ -101,6 +99,16 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
     }));
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      // Force a page reload to clear React state and re-check authentication
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   const handleGeneratePDF = async () => {
     const blob = await pdf(<TranscriptPDF student={student} />).toBlob();
     const url = URL.createObjectURL(blob);
@@ -159,14 +167,7 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
               Manage Students
             </button>
             <button
-              onClick={async () => {
-                try {
-                  await signOut();
-                  navigate('/');
-                } catch (error) {
-                  console.error('Error signing out:', error);
-                }
-              }}
+              onClick={handleLogout}
               className="flex items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
             >
               <LogOut size={20} />

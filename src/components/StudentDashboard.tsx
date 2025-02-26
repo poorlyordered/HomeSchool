@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { GraduationCap, School as SchoolIcon, Phone, MapPin, LogOut } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { signOut } from '../lib/auth';
-import { useNavigate } from 'react-router-dom';
 import type { Student, User } from '../types';
 
 interface StudentDashboardProps {
@@ -10,7 +9,6 @@ interface StudentDashboardProps {
 }
 
 export function StudentDashboard({ user }: StudentDashboardProps) {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [student, setStudent] = useState<Student | null>(null);
 
@@ -57,6 +55,16 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
     </div>;
   }
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      // Force a page reload to clear React state and re-check authentication
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white shadow-sm">
@@ -95,14 +103,7 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
             </div>
           </div>
           <button
-            onClick={async () => {
-              try {
-                await signOut();
-                navigate('/');
-              } catch (error) {
-                console.error('Error signing out:', error);
-              }
-            }}
+            onClick={handleLogout}
             className="flex items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors mt-4"
           >
             <LogOut size={20} />
