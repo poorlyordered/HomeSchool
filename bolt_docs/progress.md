@@ -12,8 +12,9 @@
 - [x] Fixed asset loading in production build
 - [x] Fixed student management module update functionality
 - [x] Improved error handling in student management
+- [x] Implemented logout functionality in both Guardian and Student dashboards
 
 ## Remaining Tasks
-- Implement comprehensive error handling across all components
-- Add automated tests for critical functionality
-- Perform thorough testing of all application features
+- [ ] Implement comprehensive error handling across all components
+- [ ] Add automated tests for critical functionality
+- [ ] Perform thorough testing of all application features

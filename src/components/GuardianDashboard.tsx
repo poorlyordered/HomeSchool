@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { GraduationCap, School as SchoolIcon, Phone, MapPin, FileDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { GraduationCap, School as SchoolIcon, Phone, MapPin, FileDown, LogOut } from 'lucide-react';
 import { Users } from 'lucide-react';
+import { signOut } from '../lib/auth';
+import { useNavigate } from 'react-router-dom';
 import { pdf } from '@react-pdf/renderer';
 import { TranscriptPDF } from './TranscriptPDF';
 import { supabase } from '../lib/supabase';
@@ -15,6 +17,7 @@ interface GuardianDashboardProps {
 }
 
 export function GuardianDashboard({ user }: GuardianDashboardProps) {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [needsSetup, setNeedsSetup] = useState(false);
   const [showStudentManagement, setShowStudentManagement] = useState(false);
@@ -22,7 +25,9 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
     school: {
       name: '',
       address: '',
-      phone: ''
+      phone: '',
+      id: '', // Added to fix TypeScript error
+      created_at: '' // Added to fix TypeScript error
     },
     info: {
       id: 'HS2024001',
@@ -70,10 +75,7 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
     return <GuardianSetup onComplete={() => setNeedsSetup(false)} />;
   }
 
-  const handleAddCourse = () => {
-    // Implementation for adding a course would go here
-    console.log('Add course');
-  };
+  // Removed unused handleAddCourse and handleAddScore functions
 
   const handleEditCourse = (course: Course) => {
     // Implementation for editing a course would go here
@@ -85,11 +87,6 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
       ...prev,
       courses: prev.courses.filter(course => course.id !== id)
     }));
-  };
-
-  const handleAddScore = () => {
-    // Implementation for adding a test score would go here
-    console.log('Add score');
   };
 
   const handleEditScore = (score: TestScore) => {
@@ -153,13 +150,29 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
               </div>
             </div>
           </div>
-          <button
-            onClick={() => setShowStudentManagement(true)}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors mt-4"
-          >
-            <Users size={20} />
-            Manage Students
-          </button>
+          <div className="flex items-center gap-2 mt-4">
+            <button
+              onClick={() => setShowStudentManagement(true)}
+              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              <Users size={20} />
+              Manage Students
+            </button>
+            <button
+              onClick={async () => {
+                try {
+                  await signOut();
+                  navigate('/');
+                } catch (error) {
+                  console.error('Error signing out:', error);
+                }
+              }}
+              className="flex items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
+            >
+              <LogOut size={20} />
+              Log Out
+            </button>
+          </div>
         </div>
       </header>
 

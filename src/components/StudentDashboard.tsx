@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { GraduationCap, School as SchoolIcon, Phone, MapPin, FileDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { GraduationCap, School as SchoolIcon, Phone, MapPin, LogOut } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { signOut } from '../lib/auth';
+import { useNavigate } from 'react-router-dom';
 import type { Student, User } from '../types';
 
 interface StudentDashboardProps {
@@ -8,6 +10,7 @@ interface StudentDashboardProps {
 }
 
 export function StudentDashboard({ user }: StudentDashboardProps) {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [student, setStudent] = useState<Student | null>(null);
 
@@ -57,8 +60,8 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
   return (
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="space-y-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-start">
+          <div className="space-y-4 flex-grow">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <SchoolIcon size={32} className="text-blue-600" />
@@ -91,6 +94,20 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
               </div>
             </div>
           </div>
+          <button
+            onClick={async () => {
+              try {
+                await signOut();
+                navigate('/');
+              } catch (error) {
+                console.error('Error signing out:', error);
+              }
+            }}
+            className="flex items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors mt-4"
+          >
+            <LogOut size={20} />
+            Log Out
+          </button>
         </div>
       </header>
 
