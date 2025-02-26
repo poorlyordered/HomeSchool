@@ -1,7 +1,7 @@
 graph TD
-    A[Landing Page] --> B{User Status}
-    B -->|Not Logged In| C[Sign In/Sign Up Page]
-    B -->|Logged In| D{Role Check}
+    A[Landing Page] --> B{User Authentication}
+    B -->|Not Authenticated| C[Sign In/Sign Up Page]
+    B -->|Authenticated| D{Role Check}
     
     C -->|Sign Up| E[Role Selection]
     E -->|Guardian| F[Guardian Setup Flow]
@@ -25,3 +25,8 @@ graph TD
     G --> N[View Courses]
     G --> O[View Test Scores]
     G --> P[View Transcripts]
+    
+    %% Logout Paths
+    I -->|Logout| A
+    G -->|Logout| A
+    F -->|Logout| A
