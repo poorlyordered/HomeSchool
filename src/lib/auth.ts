@@ -52,6 +52,80 @@ export async function resetPassword(newPassword: string): Promise<void> {
   if (error) throw error;
 }
 
+export async function updatePassword(currentPassword: string, newPassword: string): Promise<void> {
+  // First verify the current password by attempting to sign in
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || !user.email) {
+      throw new Error('User not found or email not available');
+    }
+    
+    // Try to sign in with current password to verify it
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword
+    });
+    
+    if (signInError) {
+      throw new Error('Current password is incorrect');
+    }
+    
+    // Update the password
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+    
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error updating password:', error);
+    throw error;
+  }
+}
+
+export async function updateEmail(newEmail: string): Promise<void> {
+  const { error } = await supabase.auth.updateUser({
+    email: newEmail,
+  });
+  
+  if (error) throw error;
+}
+
+export async function deleteAccount(): Promise<void> {
+  try {
+    // Get the current user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      throw new Error('User not found');
+    }
+    
+    // Delete user data from profiles table
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', user.id);
+      
+    if (profileError) {
+      console.error('Error deleting profile:', profileError);
+      // Continue with account deletion even if profile deletion fails
+    }
+    
+    // Delete the user account
+    const { error } = await supabase.auth.admin.deleteUser(user.id);
+    
+    if (error) {
+      // If admin delete fails, try to sign out as a fallback
+      await signOut();
+      throw error;
+    }
+    
+    // Sign out after successful deletion
+    await signOut();
+  } catch (error) {
+    console.error('Error deleting account:', error);
+    throw error;
+  }
+}
+
 export async function verifyEmail(): Promise<VerificationResult> {
   try {
     // Supabase automatically handles the token in the URL

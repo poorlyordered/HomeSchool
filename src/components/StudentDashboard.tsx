@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { GraduationCap, School as SchoolIcon, Phone, MapPin, LogOut } from 'lucide-react';
+import { GraduationCap, School as SchoolIcon, Phone, MapPin, LogOut, Settings } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { signOut } from '../lib/auth';
 import type { Student, User } from '../types';
+import { AccountSettings } from './AccountSettings';
 
 interface StudentDashboardProps {
   user: User;
@@ -11,6 +12,7 @@ interface StudentDashboardProps {
 export function StudentDashboard({ user }: StudentDashboardProps) {
   const [loading, setLoading] = useState(true);
   const [student, setStudent] = useState<Student | null>(null);
+  const [showAccountSettings, setShowAccountSettings] = useState(false);
 
   useEffect(() => {
     async function loadStudentData() {
@@ -102,13 +104,22 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
               </div>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors mt-4"
-          >
-            <LogOut size={20} />
-            Log Out
-          </button>
+          <div className="flex items-center gap-2 mt-4">
+            <button
+              onClick={() => setShowAccountSettings(true)}
+              className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+            >
+              <Settings size={20} />
+              Account Settings
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
+            >
+              <LogOut size={20} />
+              Log Out
+            </button>
+          </div>
         </div>
       </header>
 
@@ -173,6 +184,12 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
           </div>
         </div>
       </main>
+      {showAccountSettings && (
+        <AccountSettings
+          user={user}
+          onClose={() => setShowAccountSettings(false)}
+        />
+      )}
     </div>
   );
 }

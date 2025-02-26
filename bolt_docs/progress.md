@@ -23,7 +23,7 @@
 - [x] Add password recovery functionality
 - [x] Improve error handling during authentication
 - [x] Add session expiration handling
-- [ ] Create account management features
+- [x] Create account management features
 - [x] Implement navigation between authentication pages
 
 ## Remaining Tasks

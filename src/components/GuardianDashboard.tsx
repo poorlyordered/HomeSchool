@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { GraduationCap, School as SchoolIcon, Phone, MapPin, FileDown, LogOut } from 'lucide-react';
+import { GraduationCap, School as SchoolIcon, Phone, MapPin, FileDown, LogOut, Settings } from 'lucide-react';
 import { Users } from 'lucide-react';
 import { signOut } from '../lib/auth';
 import { pdf } from '@react-pdf/renderer';
 import { TranscriptPDF } from './TranscriptPDF';
 import { supabase } from '../lib/supabase';
 import { StudentManagement } from './StudentManagement';
+import { AccountSettings } from './AccountSettings';
 import { GuardianSetup } from './GuardianSetup';
 import { CourseList } from './CourseList';
 import { TestScores } from './TestScores';
@@ -19,6 +20,7 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
   const [loading, setLoading] = useState(true);
   const [needsSetup, setNeedsSetup] = useState(false);
   const [showStudentManagement, setShowStudentManagement] = useState(false);
+  const [showAccountSettings, setShowAccountSettings] = useState(false);
   const [student, setStudent] = useState<Student>({
     school: {
       name: '',
@@ -167,6 +169,13 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
               Manage Students
             </button>
             <button
+              onClick={() => setShowAccountSettings(true)}
+              className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+            >
+              <Settings size={20} />
+              Account Settings
+            </button>
+            <button
               onClick={handleLogout}
               className="flex items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
             >
@@ -212,6 +221,12 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
         <StudentManagement
           user={user}
           onClose={() => setShowStudentManagement(false)}
+        />
+      )}
+      {showAccountSettings && (
+        <AccountSettings
+          user={user}
+          onClose={() => setShowAccountSettings(false)}
         />
       )}
     </div>
