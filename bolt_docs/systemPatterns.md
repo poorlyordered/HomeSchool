@@ -75,3 +75,14 @@
 - Git hooks for pre-commit and pre-push validation:
   - Linting and formatting checks before commits
   - Type checking and tests before pushing to remote
+
+## Database Patterns
+
+- Supabase PostgreSQL database for data storage
+- Row-level security (RLS) policies for data access control
+- Database migrations in `supabase/migrations` directory
+- Migration naming convention: timestamp_descriptive_name.sql
+- Profile data stored in `profiles` table with user metadata
+- Foreign key relationships for data integrity
+- User authentication tied to database profiles
+- Manual migration application to production database

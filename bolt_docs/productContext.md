@@ -1,15 +1,18 @@
 # Homeschool Transcript Management System
 
 ## Purpose
+
 This project provides a comprehensive system for homeschool families to manage academic records and generate professional transcripts. It solves several key problems:
 
 1. Record Keeping
+
    - Centralized storage of academic records
    - Easy management of courses and grades
    - Tracking of standardized test scores
    - Automated GPA calculation
 
 2. Transcript Generation
+
    - Professional PDF transcript generation
    - Standardized format for college applications
    - Official documentation of academic achievement
@@ -22,25 +25,31 @@ This project provides a comprehensive system for homeschool families to manage a
    - Real-time updates
 
 ## Core Features
+
 1. User Management
+
    - Role-based authentication
-   - Guardian and student profiles
+   - Guardian and student profiles with customizable names
    - Secure access control
-   - Profile management
+   - Comprehensive profile management
+   - Account settings for personal information updates
 
 2. School Information
+
    - School details management
    - Contact information
    - Official records
    - Data validation
 
 3. Academic Records
+
    - Course tracking
    - Grade management
    - GPA calculation
    - Performance analytics
 
 4. Test Scores
+
    - Standardized test recording
    - Score validation
    - Performance tracking
@@ -53,7 +62,9 @@ This project provides a comprehensive system for homeschool families to manage a
    - Secure generation
 
 ## User Roles
+
 1. Guardian
+
    - Manage school information
    - Add/edit students
    - Manage courses and grades

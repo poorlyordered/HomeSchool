@@ -15,6 +15,7 @@
 - [x] Fixed student management module update functionality
 - [x] Improved error handling in student management
 - [x] Implemented logout functionality in both Guardian and Student dashboards
+- [x] Fixed account settings profile name update functionality
 
 ## Documentation and Planning
 
