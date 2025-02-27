@@ -55,10 +55,20 @@ export interface TestScore {
   };
 }
 
+export interface StudentGuardian {
+  id: string;
+  student_id: string;
+  guardian_id: string;
+  is_primary: boolean;
+  created_at: string;
+  guardian?: Profile;
+}
+
 export interface Student {
   school: School;
   info: StudentInfo;
   courses: Course[];
   testScores: TestScore[];
   transcriptMeta: TranscriptMeta;
+  guardians?: Profile[];
 }

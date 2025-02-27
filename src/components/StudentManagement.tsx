@@ -1,7 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { PlusCircle, Pencil, Trash2, Upload, Search, Filter } from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import type { User } from '../types';
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  PlusCircle,
+  Pencil,
+  Trash2,
+  Upload,
+  Search,
+  Filter,
+  Users,
+} from "lucide-react";
+import { supabase } from "../lib/supabase";
+import { GuardianManagement } from "./GuardianManagement";
+import type { User } from "../types";
 
 interface StudentData {
   id: string;
@@ -14,50 +23,63 @@ interface StudentData {
 interface StudentManagementProps {
   user: User;
   onClose: () => void;
+  onStudentsChanged?: () => void; // New prop to notify parent when students change
 }
 
-export function StudentManagement({ user, onClose }: StudentManagementProps) {
+export function StudentManagement({
+  user,
+  onClose,
+  onStudentsChanged,
+}: StudentManagementProps) {
   const [loading, setLoading] = useState(true);
   const [isAddingStudent, setIsAddingStudent] = useState(false);
   const [isEditingStudent, setIsEditingStudent] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterGradYear, setFilterGradYear] = useState<string>('');
+  const [managingGuardiansForStudent, setManagingGuardiansForStudent] =
+    useState<{ id: string; name: string } | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterGradYear, setFilterGradYear] = useState<string>("");
   const [formData, setFormData] = useState({
-    name: '',
-    studentId: '',
-    birthDate: '',
-    graduationDate: ''
+    name: "",
+    studentId: "",
+    birthDate: "",
+    graduationDate: "",
   });
   const [students, setStudents] = useState<StudentData[]>([]);
 
-  const filteredStudents = students.filter(student => {
-    const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         student.student_id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = !filterGradYear || student.graduation_date.startsWith(filterGradYear);
+  const filteredStudents = students.filter((student) => {
+    const matchesSearch =
+      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.student_id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter =
+      !filterGradYear || student.graduation_date.startsWith(filterGradYear);
     return matchesSearch && matchesFilter;
   });
 
   const loadStudents = useCallback(async () => {
     const { data, error } = await supabase
-      .from('students')
-      .select(`
+      .from("students")
+      .select(
+        `
         *,
         school:schools(*)
-      `)
-      .eq('guardian_id', user.id);
+      `,
+      )
+      .eq("guardian_id", user.id);
 
     if (error) {
-      console.error('Error loading students:', error);
+      console.error("Error loading students:", error);
       return;
     }
 
-    setStudents(data?.map(student => ({
-      id: student.id,
-      student_id: student.student_id,
-      name: student.name,
-      birth_date: student.birth_date,
-      graduation_date: student.graduation_date
-    })) || []);
+    setStudents(
+      data?.map((student) => ({
+        id: student.id,
+        student_id: student.student_id,
+        name: student.name,
+        birth_date: student.birth_date,
+        graduation_date: student.graduation_date,
+      })) || [],
+    );
     setLoading(false);
   }, [user.id]);
 
@@ -70,56 +92,64 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
     setLoading(true);
 
     const { data: school } = await supabase
-      .from('schools')
-      .select('id')
-      .eq('guardian_id', user.id)
+      .from("schools")
+      .select("id")
+      .eq("guardian_id", user.id)
       .single();
 
     if (!school) {
-      console.error('No school found');
+      console.error("No school found");
       setLoading(false);
       return;
     }
 
-    const { error } = await supabase
-      .from('students')
-      .insert([{
+    const { error } = await supabase.from("students").insert([
+      {
         guardian_id: user.id,
         school_id: school.id,
         student_id: formData.studentId,
         name: formData.name,
         birth_date: formData.birthDate,
-        graduation_date: formData.graduationDate
-      }]);
+        graduation_date: formData.graduationDate,
+      },
+    ]);
 
     if (error) {
-      console.error('Error creating student:', error);
+      console.error("Error creating student:", error);
     } else {
       setIsAddingStudent(false);
       setFormData({
-        name: '',
-        studentId: '',
-        birthDate: '',
-        graduationDate: ''
+        name: "",
+        studentId: "",
+        birthDate: "",
+        graduationDate: "",
       });
-      loadStudents();
+      await loadStudents();
+      // Notify parent component that students have changed
+      if (onStudentsChanged) {
+        onStudentsChanged();
+      }
     }
     setLoading(false);
   }
 
   async function handleDeleteStudent(studentId: string) {
-    if (!confirm('Are you sure you want to delete this student?')) return;
+    if (!confirm("Are you sure you want to delete this student?")) return;
 
     setLoading(true);
     const { error } = await supabase
-      .from('students')
+      .from("students")
       .delete()
-      .eq('id', studentId);
+      .eq("id", studentId);
 
     if (error) {
-      console.error('Error deleting student:', error);
+      console.error("Error deleting student:", error);
     } else {
-      loadStudents();
+      await loadStudents();
+      // Notify parent component that students have changed
+      if (onStudentsChanged) {
+        onStudentsChanged();
+      }
     }
     setLoading(false);
   }
@@ -131,36 +161,42 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('students')
+        .from("students")
         .update({
           name: formData.name,
           student_id: formData.studentId,
           birth_date: formData.birthDate,
-          graduation_date: formData.graduationDate
+          graduation_date: formData.graduationDate,
         })
-        .eq('id', isEditingStudent)
+        .eq("id", isEditingStudent)
         .select();
 
       if (error) {
-        console.error('Error updating student:', error);
+        console.error("Error updating student:", error);
         alert(`Failed to update student: ${error.message}`);
       } else if (data && data.length > 0) {
-        console.log('Student updated successfully:', data[0]);
+        console.log("Student updated successfully:", data[0]);
         setIsEditingStudent(null);
         setFormData({
-          name: '',
-          studentId: '',
-          birthDate: '',
-          graduationDate: ''
+          name: "",
+          studentId: "",
+          birthDate: "",
+          graduationDate: "",
         });
         await loadStudents();
+        // Notify parent component that students have changed
+        if (onStudentsChanged) {
+          onStudentsChanged();
+        }
       } else {
-        console.error('No data returned after update');
-        alert('Failed to update student: No data returned');
+        console.error("No data returned after update");
+        alert("Failed to update student: No data returned");
       }
     } catch (err) {
-      console.error('Exception during student update:', err);
-      alert(`An error occurred: ${err instanceof Error ? err.message : String(err)}`);
+      console.error("Exception during student update:", err);
+      alert(
+        `An error occurred: ${err instanceof Error ? err.message : String(err)}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -172,7 +208,7 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
       name: student.name,
       studentId: student.student_id,
       birthDate: student.birth_date,
-      graduationDate: student.graduation_date
+      graduationDate: student.graduation_date,
     });
   };
 
@@ -184,40 +220,46 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
     reader.onload = async (event) => {
       try {
         const csvData = event.target?.result as string;
-        const rows = csvData.split('\n').slice(1); // Skip header row
-        
+        const rows = csvData.split("\n").slice(1); // Skip header row
+
         setLoading(true);
         const { data: school } = await supabase
-          .from('schools')
-          .select('id')
-          .eq('guardian_id', user.id)
+          .from("schools")
+          .select("id")
+          .eq("guardian_id", user.id)
           .single();
 
         if (!school) {
-          console.error('No school found');
+          console.error("No school found");
           setLoading(false);
           return;
         }
 
         for (const row of rows) {
-          const [name, studentId, birthDate, graduationDate] = row.split(',').map(field => field.trim());
+          const [name, studentId, birthDate, graduationDate] = row
+            .split(",")
+            .map((field) => field.trim());
           if (!name || !studentId || !birthDate || !graduationDate) continue;
 
-          await supabase
-            .from('students')
-            .insert([{
+          await supabase.from("students").insert([
+            {
               guardian_id: user.id,
               school_id: school.id,
               name,
               student_id: studentId,
               birth_date: birthDate,
-              graduation_date: graduationDate
-            }]);
+              graduation_date: graduationDate,
+            },
+          ]);
         }
 
-        loadStudents();
+        await loadStudents();
+        // Notify parent component that students have changed
+        if (onStudentsChanged) {
+          onStudentsChanged();
+        }
       } catch (error) {
-        console.error('Error importing students:', error);
+        console.error("Error importing students:", error);
       } finally {
         setLoading(false);
       }
@@ -263,7 +305,10 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
               </div>
               <div className="flex gap-4">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                  <Search
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    size={16}
+                  />
                   <input
                     type="text"
                     placeholder="Search students..."
@@ -273,7 +318,10 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
                   />
                 </div>
                 <div className="relative">
-                  <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                  <Filter
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    size={16}
+                  />
                   <input
                     type="text"
                     placeholder="Filter by grad year..."
@@ -293,22 +341,38 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
                 >
                   <div>
                     <h3 className="font-semibold text-lg">{student.name}</h3>
-                    <p className="text-sm text-gray-600">ID: {student.student_id}</p>
                     <p className="text-sm text-gray-600">
-                      Birth Date: {student.birth_date} | 
-                      Graduation: {student.graduation_date}
+                      ID: {student.student_id}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Birth Date: {student.birth_date} | Graduation:{" "}
+                      {student.graduation_date}
                     </p>
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => startEditingStudent(student)}
                       className="text-blue-600 hover:text-blue-800"
+                      title="Edit student"
                     >
                       <Pencil size={18} />
                     </button>
                     <button
+                      onClick={() =>
+                        setManagingGuardiansForStudent({
+                          id: student.id,
+                          name: student.name,
+                        })
+                      }
+                      className="text-green-600 hover:text-green-800"
+                      title="Manage guardians"
+                    >
+                      <Users size={18} />
+                    </button>
+                    <button
                       onClick={() => handleDeleteStudent(student.id)}
                       className="text-red-600 hover:text-red-800"
+                      title="Delete student"
                     >
                       <Trash2 size={18} />
                     </button>
@@ -327,7 +391,9 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
                 type="text"
                 required
                 value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
@@ -340,7 +406,12 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
                 type="text"
                 required
                 value={formData.studentId}
-                onChange={(e) => setFormData(prev => ({ ...prev, studentId: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    studentId: e.target.value,
+                  }))
+                }
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
@@ -353,7 +424,12 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
                 type="date"
                 required
                 value={formData.birthDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, birthDate: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    birthDate: e.target.value,
+                  }))
+                }
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
@@ -366,7 +442,12 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
                 type="date"
                 required
                 value={formData.graduationDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, graduationDate: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    graduationDate: e.target.value,
+                  }))
+                }
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
@@ -377,10 +458,10 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
                 onClick={() => {
                   setIsEditingStudent(null);
                   setFormData({
-                    name: '',
-                    studentId: '',
-                    birthDate: '',
-                    graduationDate: ''
+                    name: "",
+                    studentId: "",
+                    birthDate: "",
+                    graduationDate: "",
                   });
                 }}
                 className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
@@ -392,7 +473,7 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
                 disabled={loading}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
               >
-                {loading ? 'Saving...' : 'Save Changes'}
+                {loading ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </form>
@@ -406,7 +487,9 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
                 type="text"
                 required
                 value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
@@ -419,7 +502,12 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
                 type="text"
                 required
                 value={formData.studentId}
-                onChange={(e) => setFormData(prev => ({ ...prev, studentId: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    studentId: e.target.value,
+                  }))
+                }
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
@@ -432,7 +520,12 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
                 type="date"
                 required
                 value={formData.birthDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, birthDate: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    birthDate: e.target.value,
+                  }))
+                }
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
@@ -445,7 +538,12 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
                 type="date"
                 required
                 value={formData.graduationDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, graduationDate: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    graduationDate: e.target.value,
+                  }))
+                }
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
@@ -463,12 +561,22 @@ export function StudentManagement({ user, onClose }: StudentManagementProps) {
                 disabled={loading}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
               >
-                {loading ? 'Saving...' : 'Save Student'}
+                {loading ? "Saving..." : "Save Student"}
               </button>
             </div>
           </form>
         )}
       </div>
+
+      {managingGuardiansForStudent && (
+        <GuardianManagement
+          user={user}
+          studentId={managingGuardiansForStudent.id}
+          studentName={managingGuardiansForStudent.name}
+          onClose={() => setManagingGuardiansForStudent(null)}
+          onGuardiansChanged={onStudentsChanged}
+        />
+      )}
     </div>
   );
 }

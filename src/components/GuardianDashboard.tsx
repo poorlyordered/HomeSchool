@@ -1,16 +1,32 @@
-import { useState, useEffect } from 'react';
-import { GraduationCap, School as SchoolIcon, Phone, MapPin, FileDown, LogOut, Settings } from 'lucide-react';
-import { Users } from 'lucide-react';
-import { signOut } from '../lib/auth';
-import { pdf } from '@react-pdf/renderer';
-import { TranscriptPDF } from './TranscriptPDF';
-import { supabase } from '../lib/supabase';
-import { StudentManagement } from './StudentManagement';
-import { AccountSettings } from './AccountSettings';
-import { GuardianSetup } from './GuardianSetup';
-import { CourseList } from './CourseList';
-import { TestScores } from './TestScores';
-import type { Course, TestScore, Student, User } from '../types';
+import { useState, useEffect, useCallback } from "react";
+import {
+  GraduationCap,
+  School as SchoolIcon,
+  Phone,
+  MapPin,
+  FileDown,
+  LogOut,
+  Settings,
+} from "lucide-react";
+import { Users } from "lucide-react";
+import { signOut } from "../lib/auth";
+import { pdf } from "@react-pdf/renderer";
+import { TranscriptPDF } from "./TranscriptPDF";
+import { supabase } from "../lib/supabase";
+import { StudentManagement } from "./StudentManagement";
+import { AccountSettings } from "./AccountSettings";
+import { GuardianSetup } from "./GuardianSetup";
+import { CourseList } from "./CourseList";
+import { TestScores } from "./TestScores";
+import type { Course, TestScore, Student, User } from "../types";
+
+interface StudentData {
+  id: string;
+  student_id: string;
+  name: string;
+  birth_date: string;
+  graduation_date: string;
+}
 
 interface GuardianDashboardProps {
   user: User;
@@ -21,83 +37,268 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
   const [needsSetup, setNeedsSetup] = useState(false);
   const [showStudentManagement, setShowStudentManagement] = useState(false);
   const [showAccountSettings, setShowAccountSettings] = useState(false);
+  const [students, setStudents] = useState<StudentData[]>([]);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
+    null,
+  );
   const [student, setStudent] = useState<Student>({
     school: {
-      name: '',
-      address: '',
-      phone: '',
-      id: '', // Added to fix TypeScript error
-      created_at: '' // Added to fix TypeScript error
+      name: "",
+      address: "",
+      phone: "",
+      id: "",
+      created_at: "",
     },
     info: {
-      id: 'HS2024001',
-      name: 'John Doe',
-      birthDate: '2006-05-15',
-      graduationDate: '2024-05-30'
+      id: "",
+      name: "",
+      birthDate: "",
+      graduationDate: "",
     },
     courses: [],
     testScores: [],
     transcriptMeta: {
-      issueDate: new Date().toISOString().split('T')[0],
-      administrator: user.email || ''
-    }
+      issueDate: new Date().toISOString().split("T")[0],
+      administrator: user.email || "",
+    },
   });
 
+  const loadStudents = useCallback(async () => {
+    // First check if the student_guardians table exists
+    let useJunctionTable = false;
+    try {
+      // Try to get the table info to see if it exists
+      const { error: tableCheckError } = await supabase
+        .from("student_guardians")
+        .select("id")
+        .limit(1);
+
+      // If no error, the table exists
+      if (!tableCheckError) {
+        useJunctionTable = true;
+      }
+    } catch (err) {
+      console.log(
+        "student_guardians table does not exist yet, using legacy approach",
+        err,
+      );
+    }
+
+    if (useJunctionTable) {
+      try {
+        // Load students from the student_guardians junction table
+        const { data: guardianData, error: guardianError } = await supabase
+          .from("student_guardians")
+          .select(
+            `
+            student_id,
+            is_primary,
+            students(id, student_id, name, birth_date, graduation_date)
+          `,
+          )
+          .eq("guardian_id", user.id);
+
+        if (guardianError) {
+          throw guardianError;
+        }
+
+        if (guardianData && guardianData.length > 0) {
+          // Extract student data from the nested structure
+          const processedStudents: StudentData[] = [];
+
+          for (const item of guardianData) {
+            // Safely access nested properties with type assertion
+            const studentObj = item.students;
+
+            if (studentObj && typeof studentObj === "object") {
+              // Use type assertion with unknown first to avoid TypeScript errors
+              const typedStudentObj = studentObj as unknown as {
+                id: string;
+                student_id: string;
+                name: string;
+                birth_date: string;
+                graduation_date: string;
+              };
+
+              processedStudents.push({
+                id: typedStudentObj.id,
+                student_id: typedStudentObj.student_id,
+                name: typedStudentObj.name,
+                birth_date: typedStudentObj.birth_date,
+                graduation_date: typedStudentObj.graduation_date,
+              });
+            }
+          }
+
+          if (processedStudents.length > 0) {
+            setStudents(processedStudents);
+
+            // Select the first student by default if none is selected
+            if (!selectedStudentId) {
+              // Find primary student if available
+              const primaryItem = guardianData.find((item) => item.is_primary);
+              let firstStudent: StudentData;
+
+              if (primaryItem && primaryItem.students) {
+                // Use type assertion with unknown first to avoid TypeScript errors
+                const typedPrimaryStudentObj =
+                  primaryItem.students as unknown as {
+                    id: string;
+                    student_id: string;
+                    name: string;
+                    birth_date: string;
+                    graduation_date: string;
+                  };
+
+                firstStudent = {
+                  id: typedPrimaryStudentObj.id,
+                  student_id: typedPrimaryStudentObj.student_id,
+                  name: typedPrimaryStudentObj.name,
+                  birth_date: typedPrimaryStudentObj.birth_date,
+                  graduation_date: typedPrimaryStudentObj.graduation_date,
+                };
+              } else {
+                firstStudent = processedStudents[0];
+              }
+
+              setSelectedStudentId(firstStudent.id);
+
+              // Update the student state with the selected student's data
+              setStudent((prev) => ({
+                ...prev,
+                info: {
+                  id: firstStudent.student_id,
+                  name: firstStudent.name,
+                  birthDate: firstStudent.birth_date,
+                  graduationDate: firstStudent.graduation_date,
+                },
+              }));
+            }
+          }
+
+          return;
+        }
+      } catch (error) {
+        console.error("Error loading students from student_guardians:", error);
+      }
+    }
+
+    // Fallback to the old method if the junction table doesn't exist yet or had an error
+    try {
+      const { data: legacyData, error: legacyError } = await supabase
+        .from("students")
+        .select("*")
+        .eq("guardian_id", user.id);
+
+      if (legacyError) {
+        throw legacyError;
+      }
+
+      if (legacyData && legacyData.length > 0) {
+        setStudents(legacyData);
+        // Select the first student by default if none is selected
+        if (!selectedStudentId) {
+          setSelectedStudentId(legacyData[0].id);
+
+          // Update the student state with the selected student's data
+          setStudent((prev) => ({
+            ...prev,
+            info: {
+              id: legacyData[0].student_id,
+              name: legacyData[0].name,
+              birthDate: legacyData[0].birth_date,
+              graduationDate: legacyData[0].graduation_date,
+            },
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Error loading students:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user.id, selectedStudentId]);
+
   useEffect(() => {
-    async function loadSchool() {
+    async function loadData() {
+      // Load school data
       const { data: schools } = await supabase
-        .from('schools')
-        .select('*')
-        .eq('guardian_id', user.id)
+        .from("schools")
+        .select("*")
+        .eq("guardian_id", user.id)
         .limit(1);
 
       if (!schools?.length) {
         setNeedsSetup(true);
-      } else {
-        setStudent(prev => ({
-          ...prev,
-          school: schools[0]
-        }));
+        setLoading(false);
+        return;
       }
+
+      setStudent((prev) => ({
+        ...prev,
+        school: schools[0],
+      }));
+
+      // Load student data
+      await loadStudents();
+
       setLoading(false);
     }
 
-    loadSchool();
-  }, [user.id]);
+    loadData();
+  }, [user.id, loadStudents]);
+
+  // Update student info when selectedStudentId changes
+  useEffect(() => {
+    if (selectedStudentId && students.length > 0) {
+      const selectedStudent = students.find((s) => s.id === selectedStudentId);
+      if (selectedStudent) {
+        setStudent((prev) => ({
+          ...prev,
+          info: {
+            id: selectedStudent.student_id,
+            name: selectedStudent.name,
+            birthDate: selectedStudent.birth_date,
+            graduationDate: selectedStudent.graduation_date,
+          },
+        }));
+      }
+    }
+  }, [selectedStudentId, students]);
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-    </div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
   }
 
   if (needsSetup) {
     return <GuardianSetup onComplete={() => setNeedsSetup(false)} />;
   }
 
-  // Removed unused handleAddCourse and handleAddScore functions
-
   const handleEditCourse = (course: Course) => {
     // Implementation for editing a course would go here
-    console.log('Edit course', course);
+    console.log("Edit course", course);
   };
 
   const handleDeleteCourse = (id: string) => {
-    setStudent(prev => ({
+    setStudent((prev) => ({
       ...prev,
-      courses: prev.courses.filter(course => course.id !== id)
+      courses: prev.courses.filter((course) => course.id !== id),
     }));
   };
 
   const handleEditScore = (score: TestScore) => {
     // Implementation for editing a test score would go here
-    console.log('Edit score', score);
+    console.log("Edit score", score);
   };
 
   const handleDeleteScore = (id: string) => {
-    setStudent(prev => ({
+    setStudent((prev) => ({
       ...prev,
-      testScores: prev.testScores.filter(score => score.id !== id)
+      testScores: prev.testScores.filter((score) => score.id !== id),
     }));
   };
 
@@ -105,18 +306,18 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
     try {
       await signOut();
       // Force a page reload to clear React state and re-check authentication
-      window.location.href = '/';
+      window.location.href = "/";
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error("Error signing out:", error);
     }
   };
 
   const handleGeneratePDF = async () => {
     const blob = await pdf(<TranscriptPDF student={student} />).toBlob();
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    link.download = `${student.info.name.replace(/\s+/g, '_')}_transcript.pdf`;
+    link.download = `${student.info.name.replace(/\s+/g, "_")}_transcript.pdf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -132,7 +333,9 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
               <div className="flex items-center gap-3">
                 <SchoolIcon size={32} className="text-blue-600" />
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">{student.school.name}</h1>
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    {student.school.name}
+                  </h1>
                   <div className="flex items-center gap-4 text-sm text-gray-600">
                     <span className="flex items-center gap-1">
                       <MapPin size={14} />
@@ -143,22 +346,67 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
                       {student.school.phone}
                     </span>
                   </div>
+                  <div className="flex items-center gap-1 text-sm text-gray-600 mt-1">
+                    <Users size={14} />
+                    Guardian: {user.profile.name || user.email}
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="flex items-center justify-between pt-2 border-t">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">{student.info.name}</h2>
-                <p className="text-sm text-gray-600">Student ID: {student.info.id}</p>
-              </div>
-              <div className="text-right">
-                <div className="flex items-center gap-2">
-                  <GraduationCap size={20} className="text-blue-600" />
-                  <span className="font-semibold">Expected Graduation: {student.info.graduationDate}</span>
+
+            {students.length > 0 ? (
+              <>
+                {students.length > 1 && (
+                  <div className="mb-4 mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Select Student
+                    </label>
+                    <select
+                      value={selectedStudentId || ""}
+                      onChange={(e) => {
+                        const id = e.target.value;
+                        setSelectedStudentId(id);
+                      }}
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2"
+                    >
+                      {students.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900">
+                      {student.info.name}
+                    </h2>
+                    <p className="text-sm text-gray-600">
+                      Student ID: {student.info.id}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="flex items-center gap-2">
+                      <GraduationCap size={20} className="text-blue-600" />
+                      <span className="font-semibold">
+                        Expected Graduation: {student.info.graduationDate}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      Date of Birth: {student.info.birthDate}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm text-gray-600">Date of Birth: {student.info.birthDate}</p>
+              </>
+            ) : (
+              <div className="flex items-center justify-center pt-2 border-t">
+                <p className="text-gray-600 italic">
+                  No students found. Click "Manage Students" to add a student.
+                </p>
               </div>
-            </div>
+            )}
           </div>
           <div className="flex items-center gap-2 mt-4">
             <button
@@ -187,40 +435,60 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-8">
-          <CourseList
-            studentId={student.info.id}
-            courses={student.courses}
-            onEditCourse={handleEditCourse}
-            onDeleteCourse={handleDeleteCourse}
-          />
-          <TestScores
-            studentId={student.info.id}
-            scores={student.testScores}
-            onEditScore={handleEditScore}
-            onDeleteScore={handleDeleteScore}
-          />
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm text-gray-600">Issue Date: {student.transcriptMeta.issueDate}</p>
-                <p className="text-sm text-gray-600">Administrator: {student.transcriptMeta.administrator}</p>
+        {students.length > 0 ? (
+          <div className="space-y-8">
+            <CourseList
+              studentId={student.info.id}
+              courses={student.courses}
+              onEditCourse={handleEditCourse}
+              onDeleteCourse={handleDeleteCourse}
+            />
+            <TestScores
+              studentId={student.info.id}
+              scores={student.testScores}
+              onEditScore={handleEditScore}
+              onDeleteScore={handleDeleteScore}
+            />
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-gray-600">
+                    Issue Date: {student.transcriptMeta.issueDate}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Administrator: {student.transcriptMeta.administrator}
+                  </p>
+                </div>
+                <button
+                  onClick={handleGeneratePDF}
+                  className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  <FileDown size={20} />
+                  Download Official Transcript
+                </button>
               </div>
-              <button
-                onClick={handleGeneratePDF}
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-              >
-                <FileDown size={20} />
-                Download Official Transcript
-              </button>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow-md p-6 text-center">
+            <p className="text-lg text-gray-700">
+              Please add a student to get started.
+            </p>
+            <button
+              onClick={() => setShowStudentManagement(true)}
+              className="mt-4 flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors mx-auto"
+            >
+              <Users size={20} />
+              Add Student
+            </button>
+          </div>
+        )}
       </main>
       {showStudentManagement && (
         <StudentManagement
           user={user}
           onClose={() => setShowStudentManagement(false)}
+          onStudentsChanged={loadStudents}
         />
       )}
       {showAccountSettings && (

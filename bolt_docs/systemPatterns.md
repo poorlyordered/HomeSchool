@@ -86,3 +86,8 @@
 - Foreign key relationships for data integrity
 - User authentication tied to database profiles
 - Manual migration application to production database
+- Many-to-many relationships using junction tables:
+  - `student_guardians` table for multiple guardians per student
+  - Primary guardian designation with `is_primary` flag
+  - Cascading deletes with `ON DELETE CASCADE` for referential integrity
+  - Unique constraints to prevent duplicate relationships

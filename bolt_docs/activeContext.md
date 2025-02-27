@@ -12,6 +12,25 @@
 
 ## Recent Changes
 
+- Implemented support for multiple guardians per student:
+  - Created a new student_guardians junction table in the database
+  - Added migration file for the new table structure
+  - Updated GuardianDashboard to load students through the junction table
+  - Created GuardianManagement component for adding/removing guardians
+  - Added UI for managing guardians for each student
+  - Added support for primary guardian designation
+  - Maintained backward compatibility with existing data
+- Fixed GuardianDashboard to display actual student data instead of hardcoded "John Doe":
+  - Modified GuardianDashboard to load students from the database
+  - Added student selector when multiple students exist
+  - Implemented proper state management for selected student
+  - Added empty state handling when no students exist
+  - Updated StudentManagement component to notify parent when students change
+- Enhanced AccountSettings component to include school information editing:
+  - Added a new "School" tab for guardian users
+  - Implemented functionality to view and update school name, address, and phone
+  - Added proper validation and error handling for school information updates
+  - Ensured the tab is only visible to users with the guardian role
 - Added base URL configuration to vite.config.ts for proper asset loading
 - Configured Supabase environment variables in Netlify
 - Fixed student management module with improved error handling
