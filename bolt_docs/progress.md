@@ -58,7 +58,7 @@
 - [x] Create bug tracking folder structure (Quick Win)
 - [ ] Implement tests for authentication components (Sprint)
   - [x] EmailVerification.tsx
-  - [ ] ResetPassword.tsx
+  - [x] ResetPassword.tsx
   - [ ] ForgotPassword.tsx
   - [ ] SessionExpired.tsx
 - [ ] Implement tests for dashboard components (Sprint)
@@ -80,4 +80,6 @@
 
 1. ~~Create bug tracking folder structure (Quick Win)~~ ✓
 2. ~~Implement tests for EmailVerification component (part of Sprint)~~ ✓
-3. Implement tests for ResetPassword component (part of Sprint)
+3. ~~Implement tests for ResetPassword component (part of Sprint)~~ ✓
+4. Implement tests for ForgotPassword component (part of Sprint)
+5. Fix identified bugs (based on priority)

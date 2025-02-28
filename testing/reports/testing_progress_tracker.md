@@ -6,7 +6,7 @@ Last Updated: 2025-02-28
 
 - [x] AuthForm
 - [x] EmailVerification
-- [ ] ResetPassword
+- [x] ResetPassword
 - [ ] ForgotPassword
 - [ ] SessionExpired
 - [ ] GuardianDashboard
@@ -21,14 +21,14 @@ Last Updated: 2025-02-28
 
 ## Bugs By Status
 
-- Active: 0
+- Active: 1
 - Resolved: 0
 
 ## Bugs By Priority
 
 - P1 (Critical): 0
 - P2 (High): 0
-- P3 (Medium): 0
+- P3 (Medium): 1
 - P4 (Low): 0
 
 ## E2E Testing Progress
@@ -43,7 +43,7 @@ Last Updated: 2025-02-28
 - [x] Centralized error handling utility
 - [x] AuthForm component
 - [x] EmailVerification component
-- [ ] ResetPassword component
+- [x] ResetPassword component
 - [ ] ForgotPassword component
 - [ ] SessionExpired component
 - [ ] GuardianDashboard component
@@ -60,7 +60,9 @@ Last Updated: 2025-02-28
 
 1. Create bug tracking folder structure (Quick Win) ✓
 2. Implement tests for EmailVerification component (part of Sprint) ✓
-3. Implement tests for ResetPassword component (part of Sprint)
+3. Implement tests for ResetPassword component (part of Sprint) ✓
+4. Implement tests for ForgotPassword component (part of Sprint)
+5. Fix identified bugs (based on priority)
 
 ## Notes
 
