@@ -148,7 +148,44 @@ export function ExampleComponent({
 - Handle network failures gracefully
 - Log errors for debugging
 
-## Testing
+## Project Management
+### Energy/Focus Units Approach [PM-RULES]
+- Use energy/focus units for ALL task sizing instead of rigid timeframes:
+  - **Quick Win**: Immediate, low-effort task (30-60 minutes)
+  - **Sprint**: Focused 4-6 hour block
+  - **Deep Work**: Full day dedicated effort
+  - **Project Phase**: Multi-day concentrated work
+  - **Milestone**: Significant deliverable completion
+
+- Apply energy/focus sizing to all project tasks:
+  - Quick Win: Simple features, bug fixes, documentation updates
+  - Sprint: Component implementation, feature development
+  - Deep Work: Complex features, architectural changes
+  - Project Phase: Major feature sets, system integration
+  - Milestone: Version releases, major functionality completion
+
+- Examples of task sizing by category:
+  - **Development Tasks**:
+    - Quick Win: Add form validation, implement simple UI component
+    - Sprint: Build authentication flow, implement dashboard view
+    - Deep Work: Create PDF generation system, implement complex data flows
+  
+  - **Testing Tasks**:
+    - Quick Win: Simple component tests, test setup
+    - Sprint: Authentication component tests, dashboard tests
+    - Deep Work: Complex component tests, management components
+    - Project Phase: E2E testing setup and implementation
+    - Milestone: Error handling extension across components
+
+  - **Bug Fixing**:
+    - Quick Win Bugs: UI tweaks, text changes, simple validation fixes
+    - Sprint Bugs: Component logic issues, form handling problems
+    - Deep Work Bugs: Cross-component issues, data flow problems
+
+- Track progress in appropriate markdown files
+- Document bugs using markdown files in priority folders
+- Review tasks weekly and select based on available energy
+
 ### Unit Tests
 - Co-locate test files with components
 - Follow Arrange-Act-Assert pattern
@@ -175,6 +212,18 @@ Commit Message Prefixes:
 - "refactor:" for code refactoring
 - "test:"   for adding missing tests
 - "chore:"  for maintenance tasks
+
+Energy/Focus Tags:
+- "[quick-win]" for Quick Win tasks
+- "[sprint]" for Sprint tasks
+- "[deep-work]" for Deep Work tasks
+- "[project]" for Project Phase tasks
+- "[milestone]" for Milestone completions
+
+Examples:
+- "test: [quick-win] add email validation tests"
+- "fix: [sprint] resolve authentication flow issues"
+- "feat: [deep-work] implement transcript generation"
 
 Rules:
 - Use lowercase for commit messages
@@ -234,6 +283,8 @@ Rules:
 - Follow semantic versioning for releases
 - Maintain changelog
 - Update Memory Bank regularly
+- Select tasks based on available energy/focus level
+- Use energy/focus units for planning and estimation
 
 
 For all designs I ask you to make, have them be beautiful, not cookie cutter. Make webpages that are fully featured and worthy for production.
@@ -243,4 +294,3 @@ By default, this template supports JSX syntax with Tailwind CSS classes, React h
 Use icons from lucide-react for logos.
 
 Use stock photos from unsplash where appropriate, only valid URLs you know exist. Do not download the images, only link to them in image tags.
-
