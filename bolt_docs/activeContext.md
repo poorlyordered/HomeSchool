@@ -114,6 +114,18 @@
   - Tested navigation functionality
   - Updated testing progress tracker to reflect completed work
 
+## Recent Changes
+
+- Implemented standard course catalog feature:
+  - Created standard_courses table in the database
+  - Populated table with comprehensive high school course catalog
+  - Added search and filter functionality to CourseManagement component
+  - Implemented course selection with auto-fill capability
+  - Added support for tracking course popularity
+  - Organized courses by category with filtering options
+  - Added recommended grade levels for courses
+  - Set up foundation for future enhancements (custom courses, recommendations)
+
 ## Next Steps
 
 ### Current Testing Session (In Progress)

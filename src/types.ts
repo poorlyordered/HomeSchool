@@ -64,6 +64,18 @@ export interface StudentGuardian {
   guardian?: Profile;
 }
 
+export interface StandardCourse {
+  id: string;
+  name: string;
+  category: string;
+  isSemester: boolean;
+  source: string;
+  recommendedGradeLevels?: number[];
+  popularityScore?: number;
+  userId?: string | null;
+  created_at: string;
+}
+
 export interface Student {
   school: School;
   info: StudentInfo;
