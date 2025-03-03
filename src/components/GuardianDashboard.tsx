@@ -13,11 +13,13 @@ import { signOut } from "../lib/auth";
 import { pdf } from "@react-pdf/renderer";
 import { TranscriptPDF } from "./TranscriptPDF";
 import { supabase } from "../lib/supabase";
+import { handleAndDisplayError, withErrorHandling } from "../lib/errorHandling";
 import { StudentManagement } from "./StudentManagement";
 import { AccountSettings } from "./AccountSettings";
 import { GuardianSetup } from "./GuardianSetup";
 import { CourseList } from "./CourseList";
 import { TestScores } from "./TestScores";
+import { Notification } from "./Notification";
 import type { Course, TestScore, Student, User } from "../types";
 
 interface StudentData {
@@ -32,8 +34,15 @@ interface GuardianDashboardProps {
   user: User;
 }
 
+interface NotificationState {
+  show: boolean;
+  type: "success" | "error" | "info";
+  message: string;
+}
+
 export function GuardianDashboard({ user }: GuardianDashboardProps) {
   const [loading, setLoading] = useState(true);
+  const [coursesLoading, setCoursesLoading] = useState(false);
   const [needsSetup, setNeedsSetup] = useState(false);
   const [showStudentManagement, setShowStudentManagement] = useState(false);
   const [showAccountSettings, setShowAccountSettings] = useState(false);
@@ -41,6 +50,11 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
     null,
   );
+  const [notification, setNotification] = useState<NotificationState>({
+    show: false,
+    type: "success",
+    message: "",
+  });
   const [student, setStudent] = useState<Student>({
     school: {
       name: "",
@@ -62,6 +76,51 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
       administrator: user.email || "",
     },
   });
+
+  // Function to load courses for a student - defined before it's used in useEffect
+  const loadCourses = useCallback(async (studentId: string) => {
+    setCoursesLoading(true);
+
+    console.log("Loading courses for student ID:", studentId);
+
+    try {
+      const { data, error } = await supabase
+        .from("courses")
+        .select("*")
+        .eq("student_id", studentId);
+
+      if (error) {
+        console.error("Error loading courses:", error);
+        throw error;
+      }
+
+      console.log("Courses data from Supabase:", data);
+
+      if (data) {
+        // Transform the data to match the Course type
+        const courses: Course[] = data.map((course) => ({
+          id: course.id,
+          name: course.name,
+          gradeLevel: course.grade_level as 9 | 10 | 11 | 12,
+          academicYear: course.academic_year,
+          semester: course.semester as "Fall" | "Spring",
+          creditHours: course.credit_hours,
+          grade: course.grade,
+        }));
+
+        console.log("Transformed courses:", courses);
+
+        setStudent((prev) => ({
+          ...prev,
+          courses,
+        }));
+      }
+    } catch (error) {
+      handleAndDisplayError(error);
+    } finally {
+      setCoursesLoading(false);
+    }
+  }, []);
 
   const loadStudents = useCallback(async () => {
     // First check if the student_guardians table exists
@@ -248,7 +307,7 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
     loadData();
   }, [user.id, loadStudents]);
 
-  // Update student info when selectedStudentId changes
+  // Update student info and load courses when selectedStudentId changes
   useEffect(() => {
     if (selectedStudentId && students.length > 0) {
       const selectedStudent = students.find((s) => s.id === selectedStudentId);
@@ -262,9 +321,27 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
             graduationDate: selectedStudent.graduation_date,
           },
         }));
+
+        // Load courses for the selected student
+        loadCourses(selectedStudent.id);
       }
     }
-  }, [selectedStudentId, students]);
+  }, [selectedStudentId, students, loadCourses]);
+
+  // Listen for the refreshCourses event
+  useEffect(() => {
+    const handleRefreshCourses = () => {
+      if (selectedStudentId) {
+        loadCourses(selectedStudentId);
+      }
+    };
+
+    window.addEventListener("refreshCourses", handleRefreshCourses);
+
+    return () => {
+      window.removeEventListener("refreshCourses", handleRefreshCourses);
+    };
+  }, [selectedStudentId, loadCourses]);
 
   if (loading) {
     return (
@@ -278,17 +355,45 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
     return <GuardianSetup onComplete={() => setNeedsSetup(false)} />;
   }
 
-  const handleEditCourse = (course: Course) => {
-    // Implementation for editing a course would go here
-    console.log("Edit course", course);
-  };
+  const handleEditCourse = withErrorHandling(async (course: Course) => {
+    // This would typically open a modal with the course data for editing
+    // For now, we'll just show a notification that this feature is coming soon
+    console.log("Edit course requested for:", course.name);
+    setNotification({
+      show: true,
+      type: "info",
+      message: `Course editing for "${course.name}" will be implemented in a future update.`,
+    });
+  });
 
-  const handleDeleteCourse = (id: string) => {
-    setStudent((prev) => ({
-      ...prev,
-      courses: prev.courses.filter((course) => course.id !== id),
-    }));
-  };
+  const handleDeleteCourse = withErrorHandling(async (id: string) => {
+    try {
+      const { error } = await supabase.from("courses").delete().eq("id", id);
+
+      if (error) {
+        throw error;
+      }
+
+      // Update local state
+      setStudent((prev) => ({
+        ...prev,
+        courses: prev.courses.filter((course) => course.id !== id),
+      }));
+
+      setNotification({
+        show: true,
+        type: "success",
+        message: "Course deleted successfully!",
+      });
+    } catch (error) {
+      handleAndDisplayError(error);
+      setNotification({
+        show: true,
+        type: "error",
+        message: "Failed to delete course. Please try again.",
+      });
+    }
+  });
 
   const handleEditScore = (score: TestScore) => {
     // Implementation for editing a test score would go here
@@ -437,12 +542,26 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {students.length > 0 ? (
           <div className="space-y-8">
+            {notification.show && (
+              <Notification
+                type={notification.type}
+                message={notification.message}
+                onClose={() =>
+                  setNotification({ ...notification, show: false })
+                }
+              />
+            )}
             <CourseList
-              studentId={student.info.id}
+              studentId={selectedStudentId || ""}
               courses={student.courses}
               onEditCourse={handleEditCourse}
               onDeleteCourse={handleDeleteCourse}
             />
+            {coursesLoading && (
+              <div className="flex justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              </div>
+            )}
             <TestScores
               studentId={student.info.id}
               scores={student.testScores}

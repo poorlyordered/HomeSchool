@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from 'react';
-import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
-import { CourseManagement } from './CourseManagement';
-import type { Course } from '../types';
+import { useState, useCallback } from "react";
+import { PlusCircle, Pencil, Trash2 } from "lucide-react";
+import { CourseManagement } from "./CourseManagement";
+import type { Course } from "../types";
 
 interface CourseListProps {
   studentId: string;
@@ -10,21 +10,57 @@ interface CourseListProps {
   onDeleteCourse: (id: string) => void;
 }
 
-export function CourseList({ studentId, courses, onEditCourse, onDeleteCourse }: CourseListProps) {
+export function CourseList({
+  studentId,
+  courses,
+  onEditCourse,
+  onDeleteCourse,
+}: CourseListProps) {
   const [showCourseManagement, setShowCourseManagement] = useState(false);
+
+  // Log studentId for debugging
+  console.log("CourseList received studentId:", studentId);
+
+  // Define callbacks outside of JSX
+  const handleClose = useCallback(() => {
+    console.log("Closing CourseManagement");
+    setShowCourseManagement(false);
+  }, []);
+
+  const handleCourseAdded = useCallback(() => {
+    console.log("Course added, dispatching refreshCourses event");
+    setShowCourseManagement(false);
+    // Let parent know to refresh courses
+    window.dispatchEvent(new CustomEvent("refreshCourses"));
+  }, []);
 
   const calculateGPA = useCallback(() => {
     const gradePoints = {
-      'A': 4.0, 'A-': 3.7,
-      'B+': 3.3, 'B': 3.0, 'B-': 2.7,
-      'C+': 2.3, 'C': 2.0, 'C-': 1.7,
-      'D+': 1.3, 'D': 1.0, 'F': 0.0
+      A: 4.0,
+      "A-": 3.7,
+      "B+": 3.3,
+      B: 3.0,
+      "B-": 2.7,
+      "C+": 2.3,
+      C: 2.0,
+      "C-": 1.7,
+      "D+": 1.3,
+      D: 1.0,
+      F: 0.0,
     };
 
-    const totalPoints = courses.reduce((sum, course) => 
-      sum + (gradePoints[course.grade as keyof typeof gradePoints] * course.creditHours), 0);
-    const totalCredits = courses.reduce((sum, course) => sum + course.creditHours, 0);
-    
+    const totalPoints = courses.reduce(
+      (sum, course) =>
+        sum +
+        gradePoints[course.grade as keyof typeof gradePoints] *
+          course.creditHours,
+      0,
+    );
+    const totalCredits = courses.reduce(
+      (sum, course) => sum + course.creditHours,
+      0,
+    );
+
     return totalCredits === 0 ? 0 : (totalPoints / totalCredits).toFixed(2);
   }, [courses]);
 
@@ -48,24 +84,50 @@ export function CourseList({ studentId, courses, onEditCourse, onDeleteCourse }:
         <table className="w-full">
           <thead>
             <tr className="bg-gray-50">
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Grade Level</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Academic Year</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Semester</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Course</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Credits</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Grade</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Actions</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                Grade Level
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                Academic Year
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                Semester
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                Course
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                Credits
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                Grade
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
             {courses.map((course) => (
               <tr key={course.id} className="border-t border-gray-100">
-                <td className="px-4 py-3 text-sm text-gray-800">{course.gradeLevel}th</td>
-                <td className="px-4 py-3 text-sm text-gray-800">{course.academicYear}</td>
-                <td className="px-4 py-3 text-sm text-gray-800">{course.semester}</td>
-                <td className="px-4 py-3 text-sm text-gray-800">{course.name}</td>
-                <td className="px-4 py-3 text-sm text-gray-800">{course.creditHours}</td>
-                <td className="px-4 py-3 text-sm text-gray-800">{course.grade}</td>
+                <td className="px-4 py-3 text-sm text-gray-800">
+                  {course.gradeLevel}th
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-800">
+                  {course.academicYear}
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-800">
+                  {course.semester}
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-800">
+                  {course.name}
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-800">
+                  {course.creditHours}
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-800">
+                  {course.grade}
+                </td>
                 <td className="px-4 py-3 text-sm">
                   <div className="flex gap-2">
                     <button
@@ -90,12 +152,8 @@ export function CourseList({ studentId, courses, onEditCourse, onDeleteCourse }:
       {showCourseManagement && (
         <CourseManagement
           studentId={studentId}
-          onClose={useCallback(() => setShowCourseManagement(false), [])}
-          onCourseAdded={useCallback(() => {
-            setShowCourseManagement(false);
-            // Let parent know to refresh courses
-            window.dispatchEvent(new CustomEvent('refreshCourses'));
-          }, [])}
+          onClose={handleClose}
+          onCourseAdded={handleCourseAdded}
         />
       )}
     </div>
