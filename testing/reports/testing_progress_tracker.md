@@ -1,6 +1,6 @@
 # Testing Progress Tracker
 
-Last Updated: 2025-03-03 07:55
+Last Updated: 2025-03-06 15:48
 
 ## Components Tested
 
@@ -12,7 +12,7 @@ Last Updated: 2025-03-03 07:55
 - [x] GuardianDashboard (Note: Tests created but require additional setup)
 - [x] StudentDashboard
 - [x] StudentManagement
-- [ ] GuardianManagement
+- [x] GuardianManagement
 - [ ] AccountSettings
 - [ ] CourseManagement
 - [ ] TestScoreManagement
@@ -21,14 +21,14 @@ Last Updated: 2025-03-03 07:55
 
 ## Bugs By Status
 
-- Active: 1
+- Active: 2
 - Resolved: 0
 
 ## Bugs By Priority
 
 - P1 (Critical): 0
 - P2 (High): 0
-- P3 (Medium): 1
+- P3 (Medium): 2
 - P4 (Low): 0
 
 ## E2E Testing Progress
@@ -49,7 +49,7 @@ Last Updated: 2025-03-03 07:55
 - [ ] GuardianDashboard component
 - [ ] StudentDashboard component
 - [x] StudentManagement component
-- [ ] GuardianManagement component
+- [x] GuardianManagement component
 - [ ] AccountSettings component
 - [ ] CourseManagement component
 - [ ] TestScoreManagement component
@@ -58,17 +58,22 @@ Last Updated: 2025-03-03 07:55
 
 ## Next Focus Areas
 
-1. Implement tests for GuardianManagement component (In Progress)
+1. Fix StudentDashboard test failure (BUG-002)
 2. Implement tests for AccountSettings component
 3. Implement tests for CourseManagement component
 4. Implement tests for TestScoreManagement component
 5. Implement tests for TestScores component
-6. Fix identified bugs (based on priority)
+6. Fix other identified bugs (based on priority)
 
 ## Progress Summary
 
+- Implemented course grouping by category feature in StudentDashboard and GuardianDashboard
+- Created GroupedCourseList component for displaying courses organized by category
+- Added database migration for linking courses to standard courses
+- Identified new test failure in StudentDashboard related to the recent changes (BUG-002)
+- GuardianManagement tests have been implemented and are now passing
 - StudentManagement tests have been fixed and are now passing
-- Next components to test: GuardianManagement, AccountSettings, CourseManagement, TestScoreManagement, and TestScores
+- Next components to test: AccountSettings, CourseManagement, TestScoreManagement, and TestScores
 
 ## Notes
 
@@ -76,3 +81,6 @@ Last Updated: 2025-03-03 07:55
 - Weekly status report template created
 - Testing plan documented with energy/focus units approach
 - StudentManagement tests required fixes for form interaction and mock implementation
+- GuardianManagement tests implemented with proper mocking of Supabase queries and error handling
+- Course grouping by category feature implemented with accordion-style UI and color coding
+- New test failure (BUG-002) documented in the bug tracking system

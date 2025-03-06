@@ -12,6 +12,14 @@
 
 ## Recent Changes
 
+- Implemented tests for GuardianManagement component:
+  - Created comprehensive test suite with 11 test cases
+  - Tested loading state, guardian list display, and empty state
+  - Added tests for adding, removing, and setting primary guardians
+  - Implemented proper error handling tests
+  - Fixed issues with Supabase query mocking
+  - All tests now passing successfully
+  - Updated testing progress tracker to reflect completed work
 - Fixed and improved tests for StudentManagement component:
   - Resolved issues with form interaction and mock implementation
   - Fixed test cases for adding, editing, and deleting students
@@ -116,6 +124,18 @@
 
 ## Recent Changes
 
+- Implemented course grouping by category feature:
+
+  - Created GroupedCourseList component with accordion-style UI
+  - Added color coding for different course categories
+  - Implemented expand/collapse functionality for each category
+  - Updated StudentDashboard and GuardianDashboard to use the new component
+  - Added database migration for linking courses to standard courses
+  - Implemented automatic matching of existing courses to standard courses
+  - Added fallback to "Uncategorized" for courses without a category
+  - Fixed code issues and optimized with useMemo for better performance
+  - Identified and documented a test failure in StudentDashboard (BUG-002)
+
 - Implemented standard course catalog feature:
   - Created standard_courses table in the database
   - Populated table with comprehensive high school course catalog
@@ -128,15 +148,15 @@
 
 ## Next Steps
 
-### Current Testing Session (In Progress)
+### Current Testing Session (Completed)
 
 1. ✓ Fix and improve tests for StudentManagement component
-2. Begin implementing tests for GuardianManagement component
-3. Document any bugs found during testing
+2. ✓ Implement tests for GuardianManagement component
+3. ✓ Document any bugs found during testing
 
-### Next Testing Session
+### Next Testing Session (In Progress)
 
-1. Complete tests for GuardianManagement component
+1. Fix StudentDashboard test failure (BUG-002)
 2. Implement tests for AccountSettings component
 3. Implement tests for CourseManagement component
 4. Review bugs found and prioritize fixes

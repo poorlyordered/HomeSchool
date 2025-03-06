@@ -66,7 +66,7 @@
   - [x] StudentDashboard.tsx
 - [ ] Implement tests for management components (Deep Work)
   - [x] StudentManagement.tsx
-  - [ ] GuardianManagement.tsx
+  - [x] GuardianManagement.tsx
   - [ ] AccountSettings.tsx
 - [ ] Implement tests for academic components (Deep Work)
   - [ ] CourseManagement.tsx
@@ -85,6 +85,9 @@
 - [x] Added category filtering for courses
 - [x] Implemented course selection with auto-fill capability
 - [x] Added support for tracking course popularity
+- [x] Implemented course grouping by category in student and guardian dashboards
+- [x] Created GroupedCourseList component with accordion-style UI and color coding
+- [x] Added database migration for linking courses to standard courses
 - [x] Set up foundation for future enhancements:
   - [ ] Custom user-added courses
   - [ ] Course recommendations based on grade level
@@ -98,11 +101,12 @@
 4. ~~Implement tests for ForgotPassword component (part of Sprint)~~ ✓
 5. ~~Implement tests for SessionExpired component (part of Sprint)~~ ✓
 6. ~~Fix StudentManagement component tests~~ ✓
-7. Implement tests for GuardianManagement component (Deep Work)
-8. Implement tests for AccountSettings component (Deep Work)
-9. Implement tests for CourseManagement component (Deep Work)
-10. Implement tests for TestScoreManagement component (Deep Work)
-11. Implement tests for TestScores component (Deep Work)
-12. Fix identified bugs (based on priority)
-13. Implement custom user-added courses (Enhancement)
-14. Implement course recommendations (Enhancement)
+7. ~~Implement tests for GuardianManagement component (Deep Work)~~ ✓
+8. Fix StudentDashboard test failure (BUG-002)
+9. Implement tests for AccountSettings component (Deep Work)
+10. Implement tests for CourseManagement component (Deep Work)
+11. Implement tests for TestScoreManagement component (Deep Work)
+12. Implement tests for TestScores component (Deep Work)
+13. Fix other identified bugs (based on priority)
+14. Implement custom user-added courses (Enhancement)
+15. Implement course recommendations (Enhancement)
