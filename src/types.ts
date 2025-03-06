@@ -35,6 +35,8 @@ export interface Course {
   semester: "Fall" | "Spring";
   creditHours: number;
   grade: string;
+  category?: string; // Added field
+  standardCourseId?: string; // Reference to standard course
 }
 
 export interface TranscriptMeta {

@@ -84,9 +84,15 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
     console.log("Loading courses for student ID:", studentId);
 
     try {
+      // Load courses with category information
       const { data, error } = await supabase
         .from("courses")
-        .select("*")
+        .select(
+          `
+          *,
+          standard_course:standard_courses(id, category)
+        `,
+        )
         .eq("student_id", studentId);
 
       if (error) {
@@ -97,7 +103,7 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
       console.log("Courses data from Supabase:", data);
 
       if (data) {
-        // Transform the data to match the Course type
+        // Transform the data to match the Course type with category
         const courses: Course[] = data.map((course) => ({
           id: course.id,
           name: course.name,
@@ -106,6 +112,10 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
           semester: course.semester as "Fall" | "Spring",
           creditHours: course.credit_hours,
           grade: course.grade,
+          category: course.standard_course
+            ? course.standard_course.category
+            : "Uncategorized",
+          standardCourseId: course.standard_course_id,
         }));
 
         console.log("Transformed courses:", courses);

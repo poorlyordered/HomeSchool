@@ -204,6 +204,7 @@ export function CourseManagement({
         semester: formData.semester,
         credit_hours: formData.creditHours,
         grade: formData.grade,
+        standard_course_id: selectedCourse?.id, // Add reference to standard course
       };
 
       console.log("Inserting course with data:", courseData);

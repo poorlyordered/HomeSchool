@@ -1,9 +1,17 @@
-import { useState, useEffect } from 'react';
-import { GraduationCap, School as SchoolIcon, Phone, MapPin, LogOut, Settings } from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import { signOut } from '../lib/auth';
-import type { Student, User } from '../types';
-import { AccountSettings } from './AccountSettings';
+import { useState, useEffect } from "react";
+import {
+  GraduationCap,
+  School as SchoolIcon,
+  Phone,
+  MapPin,
+  LogOut,
+  Settings,
+} from "lucide-react";
+import { supabase } from "../lib/supabase";
+import { signOut } from "../lib/auth";
+import type { Student, User } from "../types";
+import { AccountSettings } from "./AccountSettings";
+import { CourseList } from "./CourseList";
 
 interface StudentDashboardProps {
   user: User;
@@ -16,54 +24,103 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
 
   useEffect(() => {
     async function loadStudentData() {
-      const { data: studentData } = await supabase
-        .from('students')
-        .select(`
-          *,
-          school:schools(*)
-        `)
-        .eq('id', user.id)
-        .single();
+      try {
+        // Load student basic data
+        const { data: studentData } = await supabase
+          .from("students")
+          .select(
+            `
+            *,
+            school:schools(*)
+          `,
+          )
+          .eq("id", user.id)
+          .single();
 
-      if (studentData) {
+        if (!studentData) {
+          setLoading(false);
+          return;
+        }
+
+        // Load courses with category information
+        const { data: coursesData, error: coursesError } = await supabase
+          .from("courses")
+          .select(
+            `
+            *,
+            standard_course:standard_courses(id, category)
+          `,
+          )
+          .eq("student_id", studentData.id);
+
+        if (coursesError) {
+          console.error("Error loading courses:", coursesError);
+        }
+
+        // Transform courses data to include category
+        const courses = (coursesData || []).map((course) => ({
+          id: course.id,
+          name: course.name,
+          gradeLevel: course.grade_level,
+          academicYear: course.academic_year,
+          semester: course.semester,
+          creditHours: course.credit_hours,
+          grade: course.grade,
+          category: course.standard_course
+            ? course.standard_course.category
+            : "Uncategorized",
+          standardCourseId: course.standard_course_id,
+        }));
+
         setStudent({
           ...studentData,
-          courses: [],
+          courses,
           testScores: [],
           transcriptMeta: {
-            issueDate: new Date().toISOString().split('T')[0],
-            administrator: ''
-          }
+            issueDate: new Date().toISOString().split("T")[0],
+            administrator: "",
+          },
         });
+      } catch (error) {
+        console.error("Error loading student data:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
 
     loadStudentData();
   }, [user.id]);
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-    </div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
   }
 
   if (!student) {
-    return <div className="flex items-center justify-center min-h-screen">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900">No Student Record Found</h2>
-        <p className="mt-2 text-gray-600">Please contact your guardian to set up your student profile.</p>
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900">
+            No Student Record Found
+          </h2>
+          <p className="mt-2 text-gray-600">
+            Please contact your guardian to set up your student profile.
+          </p>
+        </div>
       </div>
-    </div>;
+    );
   }
 
   const handleLogout = async () => {
     try {
       await signOut();
       // Force a page reload to clear React state and re-check authentication
-      window.location.href = '/';
+      window.location.href = "/";
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error("Error signing out:", error);
     }
   };
 
@@ -76,7 +133,9 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
               <div className="flex items-center gap-3">
                 <SchoolIcon size={32} className="text-blue-600" />
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">{student.school.name}</h1>
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    {student.school.name}
+                  </h1>
                   <div className="flex items-center gap-4 text-sm text-gray-600">
                     <span className="flex items-center gap-1">
                       <MapPin size={14} />
@@ -92,15 +151,23 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
             </div>
             <div className="flex items-center justify-between pt-2 border-t">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">{student.info.name}</h2>
-                <p className="text-sm text-gray-600">Student ID: {student.info.id}</p>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  {student.info.name}
+                </h2>
+                <p className="text-sm text-gray-600">
+                  Student ID: {student.info.id}
+                </p>
               </div>
               <div className="text-right">
                 <div className="flex items-center gap-2">
                   <GraduationCap size={20} className="text-blue-600" />
-                  <span className="font-semibold">Expected Graduation: {student.info.graduationDate}</span>
+                  <span className="font-semibold">
+                    Expected Graduation: {student.info.graduationDate}
+                  </span>
                 </div>
-                <p className="text-sm text-gray-600">Date of Birth: {student.info.birthDate}</p>
+                <p className="text-sm text-gray-600">
+                  Date of Birth: {student.info.birthDate}
+                </p>
               </div>
             </div>
           </div>
@@ -125,40 +192,25 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
-          {/* Read-only course list */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Course History</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Grade Level</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Academic Year</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Semester</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Course</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Credits</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Grade</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {student.courses.map((course) => (
-                    <tr key={course.id} className="border-t border-gray-100">
-                      <td className="px-4 py-3 text-sm text-gray-800">{course.gradeLevel}th</td>
-                      <td className="px-4 py-3 text-sm text-gray-800">{course.academicYear}</td>
-                      <td className="px-4 py-3 text-sm text-gray-800">{course.semester}</td>
-                      <td className="px-4 py-3 text-sm text-gray-800">{course.name}</td>
-                      <td className="px-4 py-3 text-sm text-gray-800">{course.creditHours}</td>
-                      <td className="px-4 py-3 text-sm text-gray-800">{course.grade}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          {/* Course list with category grouping */}
+          <CourseList
+            studentId={user.id}
+            courses={student.courses}
+            onEditCourse={(course) => {
+              // Read-only in student view
+              console.log("Edit course not available in student view", course);
+            }}
+            onDeleteCourse={(id) => {
+              // Read-only in student view
+              console.log("Delete course not available in student view", id);
+            }}
+          />
 
           {/* Read-only test scores */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Standardized Test Scores</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              Standardized Test Scores
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {student.testScores.map((score) => (
                 <div key={score.id} className="border rounded-lg p-4">
@@ -172,7 +224,10 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
                       <span>{score.scores.total}</span>
                     </div>
                     {score.scores.sections.map((section, index) => (
-                      <div key={index} className="flex justify-between items-center text-sm">
+                      <div
+                        key={index}
+                        className="flex justify-between items-center text-sm"
+                      >
                         <span>{section.name}:</span>
                         <span>{section.score}</span>
                       </div>
