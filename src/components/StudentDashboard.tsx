@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { signOut } from "../lib/auth";
-import type { Student, User } from "../types";
+import type { Student, User, TestScore } from "../types";
 import { AccountSettings } from "./AccountSettings";
 import { CourseList } from "./CourseList";
 
@@ -72,10 +72,65 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
           standardCourseId: course.standard_course_id,
         }));
 
+        // Load test scores
+        const { data: testScoresData, error: testScoresError } = await supabase
+          .from("test_scores")
+          .select("*")
+          .eq("student_id", studentData.id);
+
+        if (testScoresError) {
+          console.error("Error loading test scores:", testScoresError);
+        }
+
+        // Initialize with empty test scores
+        let testScores: TestScore[] = [];
+
+        // If we have test scores, load their sections
+        if (testScoresData && testScoresData.length > 0) {
+          testScores = await Promise.all(
+            testScoresData.map(async (testScore) => {
+              const { data: sectionsData, error: sectionsError } =
+                await supabase
+                  .from("test_sections")
+                  .select("*")
+                  .eq("test_score_id", testScore.id);
+
+              if (sectionsError) {
+                console.error("Error loading test sections:", sectionsError);
+                return {
+                  id: testScore.id,
+                  type: testScore.type as "ACT" | "SAT",
+                  date: testScore.date,
+                  scores: {
+                    total: testScore.total_score,
+                    sections: [],
+                  },
+                };
+              }
+
+              // Transform the data to match the TestScore type
+              const sections = sectionsData.map((section) => ({
+                name: section.name,
+                score: section.score,
+              }));
+
+              return {
+                id: testScore.id,
+                type: testScore.type as "ACT" | "SAT",
+                date: testScore.date,
+                scores: {
+                  total: testScore.total_score,
+                  sections,
+                },
+              };
+            }),
+          );
+        }
+
         setStudent({
           ...studentData,
           courses,
-          testScores: [],
+          testScores,
           transcriptMeta: {
             issueDate: new Date().toISOString().split("T")[0],
             administrator: "",

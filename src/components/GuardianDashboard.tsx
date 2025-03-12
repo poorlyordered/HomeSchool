@@ -43,6 +43,7 @@ interface NotificationState {
 export function GuardianDashboard({ user }: GuardianDashboardProps) {
   const [loading, setLoading] = useState(true);
   const [coursesLoading, setCoursesLoading] = useState(false);
+  const [testScoresLoading, setTestScoresLoading] = useState(false);
   const [needsSetup, setNeedsSetup] = useState(false);
   const [showStudentManagement, setShowStudentManagement] = useState(false);
   const [showAccountSettings, setShowAccountSettings] = useState(false);
@@ -76,6 +77,77 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
       administrator: user.email || "",
     },
   });
+
+  // Function to load test scores for a student
+  const loadTestScores = useCallback(async (studentId: string) => {
+    setTestScoresLoading(true);
+
+    console.log("Loading test scores for student ID:", studentId);
+
+    try {
+      // Load test scores
+      const { data: testScoresData, error: testScoresError } = await supabase
+        .from("test_scores")
+        .select("*")
+        .eq("student_id", studentId);
+
+      if (testScoresError) {
+        console.error("Error loading test scores:", testScoresError);
+        throw testScoresError;
+      }
+
+      if (!testScoresData || testScoresData.length === 0) {
+        setStudent((prev) => ({
+          ...prev,
+          testScores: [],
+        }));
+        setTestScoresLoading(false);
+        return;
+      }
+
+      // Load test sections for each test score
+      const testScores = await Promise.all(
+        testScoresData.map(async (testScore) => {
+          const { data: sectionsData, error: sectionsError } = await supabase
+            .from("test_sections")
+            .select("*")
+            .eq("test_score_id", testScore.id);
+
+          if (sectionsError) {
+            console.error("Error loading test sections:", sectionsError);
+            throw sectionsError;
+          }
+
+          // Transform the data to match the TestScore type
+          const sections = sectionsData.map((section) => ({
+            name: section.name,
+            score: section.score,
+          }));
+
+          return {
+            id: testScore.id,
+            type: testScore.type as "ACT" | "SAT",
+            date: testScore.date,
+            scores: {
+              total: testScore.total_score,
+              sections,
+            },
+          };
+        }),
+      );
+
+      console.log("Transformed test scores:", testScores);
+
+      setStudent((prev) => ({
+        ...prev,
+        testScores,
+      }));
+    } catch (error) {
+      handleAndDisplayError(error);
+    } finally {
+      setTestScoresLoading(false);
+    }
+  }, []);
 
   // Function to load courses for a student - defined before it's used in useEffect
   const loadCourses = useCallback(async (studentId: string) => {
@@ -332,13 +404,14 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
           },
         }));
 
-        // Load courses for the selected student
+        // Load courses and test scores for the selected student
         loadCourses(selectedStudent.id);
+        loadTestScores(selectedStudent.id);
       }
     }
-  }, [selectedStudentId, students, loadCourses]);
+  }, [selectedStudentId, students, loadCourses, loadTestScores]);
 
-  // Listen for the refreshCourses event
+  // Listen for the refreshCourses and refreshTestScores events
   useEffect(() => {
     const handleRefreshCourses = () => {
       if (selectedStudentId) {
@@ -346,12 +419,20 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
       }
     };
 
+    const handleRefreshTestScores = () => {
+      if (selectedStudentId) {
+        loadTestScores(selectedStudentId);
+      }
+    };
+
     window.addEventListener("refreshCourses", handleRefreshCourses);
+    window.addEventListener("refreshTestScores", handleRefreshTestScores);
 
     return () => {
       window.removeEventListener("refreshCourses", handleRefreshCourses);
+      window.removeEventListener("refreshTestScores", handleRefreshTestScores);
     };
-  }, [selectedStudentId, loadCourses]);
+  }, [selectedStudentId, loadCourses, loadTestScores]);
 
   if (loading) {
     return (
@@ -410,12 +491,48 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
     console.log("Edit score", score);
   };
 
-  const handleDeleteScore = (id: string) => {
-    setStudent((prev) => ({
-      ...prev,
-      testScores: prev.testScores.filter((score) => score.id !== id),
-    }));
-  };
+  const handleDeleteScore = withErrorHandling(async (id: string) => {
+    try {
+      // First delete the test sections
+      const { error: sectionsError } = await supabase
+        .from("test_sections")
+        .delete()
+        .eq("test_score_id", id);
+
+      if (sectionsError) {
+        throw sectionsError;
+      }
+
+      // Then delete the test score
+      const { error: scoreError } = await supabase
+        .from("test_scores")
+        .delete()
+        .eq("id", id);
+
+      if (scoreError) {
+        throw scoreError;
+      }
+
+      // Update local state
+      setStudent((prev) => ({
+        ...prev,
+        testScores: prev.testScores.filter((score) => score.id !== id),
+      }));
+
+      setNotification({
+        show: true,
+        type: "success",
+        message: "Test score deleted successfully!",
+      });
+    } catch (error) {
+      handleAndDisplayError(error);
+      setNotification({
+        show: true,
+        type: "error",
+        message: "Failed to delete test score. Please try again.",
+      });
+    }
+  });
 
   const handleLogout = async () => {
     try {
@@ -578,6 +695,11 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
               onEditScore={handleEditScore}
               onDeleteScore={handleDeleteScore}
             />
+            {testScoresLoading && (
+              <div className="flex justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              </div>
+            )}
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex justify-between items-center">
                 <div>
