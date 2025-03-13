@@ -31,13 +31,19 @@ jest.mock("../../components/AccountSettings", () => ({
 // Mock window.location
 const originalLocation = window.location;
 beforeAll(() => {
-  // @ts-expect-error - Intentionally modifying window.location for testing
-  delete window.location;
-  window.location = { href: "" } as Location;
+  Object.defineProperty(window, "location", {
+    configurable: true,
+    value: { href: "" },
+    writable: true,
+  });
 });
 
 afterAll(() => {
-  window.location = originalLocation;
+  Object.defineProperty(window, "location", {
+    configurable: true,
+    value: originalLocation,
+    writable: true,
+  });
 });
 
 describe("StudentDashboard Component", () => {
@@ -253,9 +259,10 @@ describe("StudentDashboard Component", () => {
 
     render(<StudentDashboard user={mockUser} />);
 
-    // Wait for loading to complete
+    // Wait for loading to complete - using the correct selector for the loading spinner
     await waitFor(() => {
-      expect(screen.queryByRole("status")).not.toBeInTheDocument();
+      const spinnerElement = document.querySelector(".animate-spin");
+      expect(spinnerElement).toBeNull();
     });
 
     // Click the Log Out button

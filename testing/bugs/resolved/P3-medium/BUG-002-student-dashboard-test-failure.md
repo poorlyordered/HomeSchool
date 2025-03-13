@@ -1,6 +1,6 @@
 # BUG-002: StudentDashboard - Test Failure in Error Handling During Logout
 
-## Status: Active
+## Status: Resolved
 
 ## Priority: P3 (Medium)
 
@@ -37,4 +37,16 @@ TestingLibraryElementError: Unable to find an element with the text: /Log Out/i.
 
 ## Resolution
 
-(To be filled when fixed)
+Fixed on March 10, 2025. The issue was in the way the test was waiting for the loading state to complete. The test was using `screen.queryByRole("status")` to check for the loading spinner, but the actual implementation uses a div with the class `.animate-spin`.
+
+The fix was to update the test to use the correct selector:
+
+```javascript
+// Wait for loading to complete - using the correct selector for the loading spinner
+await waitFor(() => {
+  const spinnerElement = document.querySelector(".animate-spin");
+  expect(spinnerElement).toBeNull();
+});
+```
+
+Additionally, fixed TypeScript errors in the window.location mock by using Object.defineProperty instead of direct assignment.

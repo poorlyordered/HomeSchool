@@ -78,6 +78,14 @@ export interface StandardCourse {
   created_at: string;
 }
 
+export interface StudentData {
+  id: string;
+  student_id: string;
+  name: string;
+  birth_date: string;
+  graduation_date: string;
+}
+
 export interface Student {
   school: School;
   info: StudentInfo;

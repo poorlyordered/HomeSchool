@@ -39,6 +39,21 @@ export function CourseManagement({
     grade: "A",
   });
 
+  // Generate academic year options
+  function generateAcademicYearOptions(): string[] {
+    const currentYear = new Date().getFullYear();
+    const startYear = currentYear - 2; // Start 2 years back
+    const endYear = currentYear + 1; // Go 1 year ahead
+
+    const options: string[] = [];
+
+    for (let year = startYear; year <= endYear; year++) {
+      options.push(`${year}-${year + 1}`);
+    }
+
+    return options;
+  }
+
   // Standard courses state
   const [standardCourses, setStandardCourses] = useState<StandardCourse[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -288,10 +303,14 @@ export function CourseManagement({
 
           {/* Category Filter */}
           <div className="mb-3">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="category-filter"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Filter by Category
             </label>
             <select
+              id="category-filter"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -308,10 +327,14 @@ export function CourseManagement({
 
           {/* Search Input */}
           <div className="mb-3">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="course-search"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Search Courses
             </label>
             <input
+              id="course-search"
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -369,10 +392,14 @@ export function CourseManagement({
         <form onSubmit={handleSubmit} className="space-y-4">
           <h3 className="text-lg font-medium mb-2">Course Details</h3>
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="course-name"
+              className="block text-sm font-medium text-gray-700"
+            >
               Course Name
             </label>
             <input
+              id="course-name"
               type="text"
               required
               value={formData.name}
@@ -384,10 +411,14 @@ export function CourseManagement({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="grade-level"
+              className="block text-sm font-medium text-gray-700"
+            >
               Grade Level
             </label>
             <select
+              id="grade-level"
               value={formData.gradeLevel}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -405,13 +436,15 @@ export function CourseManagement({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="academic-year"
+              className="block text-sm font-medium text-gray-700"
+            >
               Academic Year
             </label>
-            <input
-              type="text"
+            <select
+              id="academic-year"
               required
-              placeholder="2023-2024"
               value={formData.academicYear}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -420,14 +453,25 @@ export function CourseManagement({
                 }))
               }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            />
+            >
+              <option value="">Select Academic Year</option>
+              {generateAcademicYearOptions().map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="semester"
+              className="block text-sm font-medium text-gray-700"
+            >
               Semester
             </label>
             <select
+              id="semester"
               value={formData.semester}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -443,10 +487,14 @@ export function CourseManagement({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="credit-hours"
+              className="block text-sm font-medium text-gray-700"
+            >
               Credit Hours
             </label>
             <input
+              id="credit-hours"
               type="number"
               required
               min="0.5"
@@ -463,10 +511,14 @@ export function CourseManagement({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="grade"
+              className="block text-sm font-medium text-gray-700"
+            >
               Grade
             </label>
             <select
+              id="grade"
               value={formData.grade}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, grade: e.target.value }))
