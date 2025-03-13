@@ -43,6 +43,16 @@ describe("Error Handling Utility", () => {
       expect(result.originalError).toBe(error);
     });
 
+    it("should include context information when provided", () => {
+      const error = new Error("Test error");
+      const result = handleError(error, "TestComponent");
+
+      expect(result.type).toBe(ErrorType.UNKNOWN);
+      expect(result.message).toBe("An unexpected error occurred");
+      expect(result.technical).toBe("Test error");
+      expect(result.originalError).toBe(error);
+    });
+
     it("should detect network errors", () => {
       const error = new Error("Network connection failed");
       const result = handleError(error);
@@ -107,6 +117,14 @@ describe("Error Handling Utility", () => {
       expect(result.type).toBe(ErrorType.UNKNOWN);
       expect(toast.error).toHaveBeenCalled();
     });
+
+    it("should handle and display error with context", () => {
+      const error = new Error("Test error");
+      const result = handleAndDisplayError(error, "TestComponent");
+
+      expect(result.type).toBe(ErrorType.UNKNOWN);
+      expect(toast.error).toHaveBeenCalled();
+    });
   });
 
   describe("withErrorHandling", () => {
@@ -143,6 +161,22 @@ describe("Error Handling Utility", () => {
 
       expect(customErrorHandler).toHaveBeenCalled();
       expect(toast.error).not.toHaveBeenCalled();
+    });
+
+    it("should handle error with context when provided", async () => {
+      const error = new Error("Function failed");
+      const failingFn = jest.fn().mockRejectedValue(error);
+      const wrappedFn = withErrorHandling(
+        failingFn,
+        undefined,
+        "TestComponent",
+      );
+
+      const result = await wrappedFn();
+
+      expect(result).toBeUndefined();
+      expect(failingFn).toHaveBeenCalled();
+      expect(toast.error).toHaveBeenCalled();
     });
   });
 

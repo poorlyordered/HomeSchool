@@ -14,6 +14,17 @@
 
 ## Recent Changes
 
+- Implemented centralized error handling system:
+
+  - Created ErrorBoundary component for catching and displaying React component errors
+  - Developed comprehensive error handling utility in src/lib/errorHandling.ts
+  - Added context parameter to error handling functions for better error tracking
+  - Created unit tests for error handling utility
+  - Updated hooks and components to use the centralized error handling
+  - Wrapped the application with ErrorBoundary in App.tsx
+  - Improved user experience with consistent error messages
+  - Enhanced debugging capabilities with detailed technical error information
+
 - Refactored GuardianDashboard component to improve maintainability:
 
   - Created a new directory structure with `src/components/guardian/` directory

@@ -47,20 +47,35 @@
 
 ## Error Handling Patterns
 
-- Centralized error handling utility in `src/lib/errorHandling.ts`
-- Standardized error types and structure with `AppError` interface
-- Error categorization by type (authentication, network, validation, etc.)
-- User-friendly error messages via toast notifications
-- Technical details logged to console in development mode
-- Error wrapping utility for async functions with `withErrorHandling`
-- Form validation with standardized error reporting
-- Try/catch blocks for async operations
-- Detailed error logging to console
-- User-friendly error messages via notification components
-- Specific error messages for different authentication failures
-- Verification of database operation success
-- React useCallback for memoizing functions that trigger API calls
-- Proper dependency management in useEffect hooks
+- Comprehensive error handling system:
+
+  - ErrorBoundary component for catching and displaying React component errors
+  - Centralized error handling utility in `src/lib/errorHandling.ts`
+  - Context tracking for better error identification and debugging
+  - Standardized error types and structure with `AppError` interface
+  - Error categorization by type (authentication, network, validation, unknown)
+  - User-friendly error messages with actionable suggestions
+  - Technical details for developer debugging
+  - Application wrapped with ErrorBoundary in App.tsx
+  - Consistent error display via toast notifications
+  - Fallback UI for component errors
+
+- Error handling utilities:
+
+  - `handleError`: Processes errors into standardized AppError format
+  - `displayError`: Shows errors to users via toast notifications
+  - `handleAndDisplayError`: Combines processing and display in one function
+  - `withErrorHandling`: Higher-order function for wrapping async operations
+  - `validateForm`: Standardized form validation with error reporting
+
+- Error handling patterns:
+  - Try/catch blocks for async operations
+  - Context parameter for tracking error sources
+  - Detailed error logging to console in development mode
+  - Specific error messages for different failure types
+  - Verification of database operation success
+  - React useCallback for memoizing functions that trigger API calls
+  - Proper dependency management in useEffect hooks
 
 ## Testing Patterns
 

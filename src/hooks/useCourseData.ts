@@ -26,7 +26,6 @@ export function useCourseData() {
         .eq("student_id", studentId);
 
       if (error) {
-        console.error("Error loading courses:", error);
         throw error;
       }
 
@@ -52,7 +51,7 @@ export function useCourseData() {
         setCourses(transformedCourses);
       }
     } catch (error) {
-      handleAndDisplayError(error);
+      handleAndDisplayError(error, "useCourseData.loadCourses");
     } finally {
       setCoursesLoading(false);
     }
@@ -71,7 +70,7 @@ export function useCourseData() {
 
       return { success: true, message: "Course deleted successfully!" };
     } catch (error) {
-      handleAndDisplayError(error);
+      handleAndDisplayError(error, "useCourseData.handleDeleteCourse");
       return {
         success: false,
         message: "Failed to delete course. Please try again.",

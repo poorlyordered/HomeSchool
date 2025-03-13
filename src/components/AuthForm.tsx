@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { signIn, signUp } from "../lib/auth";
+import { handleAndDisplayError } from "../lib/errorHandling";
 
 interface AuthFormProps {
   mode: "signin" | "signup";
@@ -31,7 +32,10 @@ export function AuthForm({ mode, onSuccess }: AuthFormProps) {
         onSuccess();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      const errorMessage =
+        err instanceof Error ? err.message : "An error occurred";
+      handleAndDisplayError(err, "AuthForm.handleSubmit");
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

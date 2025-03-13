@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
+import { handleAndDisplayError } from "../lib/errorHandling";
 import type { User, StudentData } from "../types";
 
 export function useStudentData(user: User) {
@@ -25,6 +26,7 @@ export function useStudentData(user: User) {
         useJunctionTable = true;
       }
     } catch (err) {
+      // Log but don't display to user as this is just a check
       console.log(
         "student_guardians table does not exist yet, using legacy approach",
         err,
@@ -115,7 +117,7 @@ export function useStudentData(user: User) {
           return;
         }
       } catch (error) {
-        console.error("Error loading students from student_guardians:", error);
+        handleAndDisplayError(error, "useStudentData.loadStudents.junction");
       }
     }
 
@@ -138,7 +140,7 @@ export function useStudentData(user: User) {
         }
       }
     } catch (error) {
-      console.error("Error loading students:", error);
+      handleAndDisplayError(error, "useStudentData.loadStudents.legacy");
     } finally {
       setLoading(false);
     }
@@ -147,22 +149,31 @@ export function useStudentData(user: User) {
   // Load school data and check if setup is needed
   useEffect(() => {
     async function loadData() {
-      // Load school data
-      const { data: schools } = await supabase
-        .from("schools")
-        .select("*")
-        .eq("guardian_id", user.id)
-        .limit(1);
+      try {
+        // Load school data
+        const { data: schools, error: schoolsError } = await supabase
+          .from("schools")
+          .select("*")
+          .eq("guardian_id", user.id)
+          .limit(1);
 
-      if (!schools?.length) {
-        setNeedsSetup(true);
+        if (schoolsError) {
+          throw schoolsError;
+        }
+
+        if (!schools?.length) {
+          setNeedsSetup(true);
+          setLoading(false);
+          return;
+        }
+
+        // Load student data
+        await loadStudents();
+      } catch (error) {
+        handleAndDisplayError(error, "useStudentData.loadData");
+      } finally {
         setLoading(false);
-        return;
       }
-
-      // Load student data
-      await loadStudents();
-      setLoading(false);
     }
 
     loadData();

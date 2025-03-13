@@ -28,14 +28,15 @@ export interface AppError {
 /**
  * Handles an error by categorizing it and returning a standardized AppError
  * @param error The error to handle
+ * @param context Optional context information (e.g., component name)
  * @returns A standardized AppError
  */
-export const handleError = (error: unknown): AppError => {
+export const handleError = (error: unknown, context?: string): AppError => {
   // Default to unknown error
   const appError: AppError = {
     type: ErrorType.UNKNOWN,
     message: "An unexpected error occurred",
-    technical: "Unknown error",
+    technical: context ? `[${context}] Unknown error` : "Unknown error",
     actionable: "Please try again or contact support if the issue persists",
     originalError: error,
   };
@@ -158,8 +159,9 @@ export const displayError = (error: AppError): void => {
     position: "top-center",
   });
 
-  // Log detailed error to console
-  console.error("Error details:", {
+  // Log detailed error to console with timestamp
+  const timestamp = new Date().toISOString();
+  console.error(`[${timestamp}] Error details:`, {
     type: error.type,
     message: error.message,
     technical: error.technical,
@@ -171,10 +173,14 @@ export const displayError = (error: AppError): void => {
 /**
  * Utility function to handle and display an error in one step
  * @param error The error to handle and display
+ * @param context Optional context information (e.g., component name)
  * @returns The handled AppError
  */
-export const handleAndDisplayError = (error: unknown): AppError => {
-  const appError = handleError(error);
+export const handleAndDisplayError = (
+  error: unknown,
+  context?: string,
+): AppError => {
+  const appError = handleError(error, context);
   displayError(appError);
   return appError;
 };
@@ -183,17 +189,19 @@ export const handleAndDisplayError = (error: unknown): AppError => {
  * Creates a try/catch wrapper for async functions
  * @param fn The async function to wrap
  * @param errorHandler Optional custom error handler
+ * @param context Optional context information (e.g., component name)
  * @returns A wrapped function that handles errors
  */
 export function withErrorHandling<T, Args extends unknown[]>(
   fn: (...args: Args) => Promise<T>,
   errorHandler?: (error: AppError) => void,
+  context?: string,
 ): (...args: Args) => Promise<T | undefined> {
   return async (...args: Args): Promise<T | undefined> => {
     try {
       return await fn(...args);
     } catch (error) {
-      const appError = handleError(error);
+      const appError = handleError(error, context);
 
       if (errorHandler) {
         errorHandler(appError);

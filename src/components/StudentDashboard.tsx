@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { signOut } from "../lib/auth";
+import { handleAndDisplayError } from "../lib/errorHandling";
 import type { Student, User, TestScore } from "../types";
 import { AccountSettings } from "./AccountSettings";
 import { CourseList } from "./CourseList";
@@ -54,7 +55,7 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
           .eq("student_id", studentData.id);
 
         if (coursesError) {
-          console.error("Error loading courses:", coursesError);
+          handleAndDisplayError(coursesError, "StudentDashboard.loadCourses");
         }
 
         // Transform courses data to include category
@@ -79,7 +80,10 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
           .eq("student_id", studentData.id);
 
         if (testScoresError) {
-          console.error("Error loading test scores:", testScoresError);
+          handleAndDisplayError(
+            testScoresError,
+            "StudentDashboard.loadTestScores",
+          );
         }
 
         // Initialize with empty test scores
@@ -96,7 +100,10 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
                   .eq("test_score_id", testScore.id);
 
               if (sectionsError) {
-                console.error("Error loading test sections:", sectionsError);
+                handleAndDisplayError(
+                  sectionsError,
+                  "StudentDashboard.loadTestSections",
+                );
                 return {
                   id: testScore.id,
                   type: testScore.type as "ACT" | "SAT",
@@ -137,7 +144,7 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
           },
         });
       } catch (error) {
-        console.error("Error loading student data:", error);
+        handleAndDisplayError(error, "StudentDashboard.loadStudentData");
       } finally {
         setLoading(false);
       }
@@ -175,7 +182,7 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
       // Force a page reload to clear React state and re-check authentication
       window.location.href = "/";
     } catch (error) {
-      console.error("Error signing out:", error);
+      handleAndDisplayError(error, "StudentDashboard.handleLogout");
     }
   };
 
