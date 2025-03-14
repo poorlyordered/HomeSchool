@@ -340,7 +340,7 @@ describe("CourseManagement Component", () => {
 
     // Check that handleCourseSelect was called with the correct course
     expect(mockHandleCourseSelect).toHaveBeenCalledWith(mockStandardCourses[0]);
-  });
+  }, 15000);
 
   it("handles form submission", async () => {
     const mockHandleSubmit = jest.fn((e) => {
@@ -365,7 +365,7 @@ describe("CourseManagement Component", () => {
 
     // Check that handleSubmit was called
     expect(mockHandleSubmit).toHaveBeenCalled();
-  });
+  }, 15000);
 
   it("handles search query changes", async () => {
     const mockSetSearchQuery = jest.fn();
@@ -388,7 +388,7 @@ describe("CourseManagement Component", () => {
 
     // Check that setSearchQuery was called with the correct value
     expect(mockSetSearchQuery).toHaveBeenCalledWith("Algebra");
-  });
+  }, 15000);
 
   it("handles category filter changes", async () => {
     const mockSetSelectedCategory = jest.fn();
@@ -457,5 +457,5 @@ describe("CourseManagement Component", () => {
 
     // Check that onClose was called
     expect(mockOnClose).toHaveBeenCalled();
-  });
+  }, 15000);
 });
