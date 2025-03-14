@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from 'react';
-import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
-import { TestScoreManagement } from './TestScoreManagement';
-import type { TestScore } from '../types';
+import { useState, useCallback } from "react";
+import { PlusCircle, Pencil, Trash2 } from "lucide-react";
+import { TestScoreManagement } from "./TestScoreManagement";
+import type { TestScore } from "../types";
 
 interface TestScoresProps {
   studentId: string;
@@ -10,13 +10,28 @@ interface TestScoresProps {
   onDeleteScore: (id: string) => void;
 }
 
-export function TestScores({ studentId, scores, onEditScore, onDeleteScore }: TestScoresProps) {
+export function TestScores({
+  studentId,
+  scores,
+  onEditScore,
+  onDeleteScore,
+}: TestScoresProps) {
   const [showTestScoreManagement, setShowTestScoreManagement] = useState(false);
+
+  // Move useCallback hooks to the top level
+  const handleClose = useCallback(() => setShowTestScoreManagement(false), []);
+  const handleScoreAdded = useCallback(() => {
+    setShowTestScoreManagement(false);
+    // Let parent know to refresh scores
+    window.dispatchEvent(new CustomEvent("refreshTestScores"));
+  }, []);
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Standardized Test Scores</h2>
+        <h2 className="text-2xl font-bold text-gray-800">
+          Standardized Test Scores
+        </h2>
         <button
           onClick={() => setShowTestScoreManagement(true)}
           className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
@@ -55,7 +70,10 @@ export function TestScores({ studentId, scores, onEditScore, onDeleteScore }: Te
                 <span>{score.scores.total}</span>
               </div>
               {score.scores.sections.map((section, index) => (
-                <div key={index} className="flex justify-between items-center text-sm">
+                <div
+                  key={index}
+                  className="flex justify-between items-center text-sm"
+                >
                   <span>{section.name}:</span>
                   <span>{section.score}</span>
                 </div>
@@ -67,12 +85,8 @@ export function TestScores({ studentId, scores, onEditScore, onDeleteScore }: Te
       {showTestScoreManagement && (
         <TestScoreManagement
           studentId={studentId}
-          onClose={useCallback(() => setShowTestScoreManagement(false), [])}
-          onScoreAdded={useCallback(() => {
-            setShowTestScoreManagement(false);
-            // Let parent know to refresh scores
-            window.dispatchEvent(new CustomEvent('refreshTestScores'));
-          }, [])}
+          onClose={handleClose}
+          onScoreAdded={handleScoreAdded}
         />
       )}
     </div>

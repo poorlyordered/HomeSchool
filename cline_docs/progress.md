@@ -168,7 +168,7 @@
   - [x] BUG-002: StudentDashboard test failure (P3-medium, resolved)
   - [x] BUG-003: CourseManagement test timeouts (P3-medium)
   - [x] BUG-004: Unused 'school' variable in GuardianSetup component (P4-low)
-  - [x] BUG-005: Conditional React hooks in TestScores component (P3-medium)
+  - [x] BUG-005: Conditional React hooks in TestScores component (P3-medium, resolved)
 
 ## Next Focus Areas
 
@@ -189,11 +189,12 @@
 15. ~~Implement centralized error handling system~~ ✓
 16. ~~Fix TypeScript warnings for unused React imports~~ ✓
 17. ~~Create bug tickets for remaining linting issues~~ ✓
-18. Implement Playwright for E2E testing (Project Phase)
-19. Update tests for GuardianDashboard to work with the refactored components
-20. Implement tests for TestScoreManagement component (Deep Work)
-21. Implement tests for TestScores component (Deep Work)
-22. Continue extending error handling to remaining components
-23. Fix identified bugs (based on priority)
-24. Implement custom user-added courses (Enhancement)
-25. Implement course recommendations (Enhancement)
+18. ~~Fix conditional React hooks in TestScores component (BUG-005)~~ ✓
+19. Implement Playwright for E2E testing (Project Phase)
+20. Update tests for GuardianDashboard to work with the refactored components
+21. Implement tests for TestScoreManagement component (Deep Work)
+22. Implement tests for TestScores component (Deep Work)
+23. Continue extending error handling to remaining components
+24. Fix remaining identified bugs (based on priority)
+25. Implement custom user-added courses (Enhancement)
+26. Implement course recommendations (Enhancement)

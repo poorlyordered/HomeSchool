@@ -98,13 +98,17 @@
 
 ## Current Task
 
-- Fixed TypeScript warnings and created bug tickets:
+- Fixed React Hooks Rules violation in TestScores component:
 
-  - Removed unused React imports from 7 component files
-  - Created bug ticket BUG-004 for unused 'school' variable in GuardianSetup component
-  - Created bug ticket BUG-005 for conditional React hooks in TestScores component
-  - Verified changes with linting and type checking
-  - Updated Memory Bank files to document changes and new bugs
+  - Fixed bug BUG-005 by moving useCallback hooks to the top level of the component
+  - Moved hooks out of conditional JSX rendering block
+  - Defined them at the top level with appropriate names (handleClose and handleScoreAdded)
+  - Used these predefined callback functions in the conditional rendering block
+  - Removed unused React import to align with React 17+ JSX transform
+  - Verified the fix by running ESLint on the file
+  - Updated the bug report with the resolution
+  - Ensured hooks are called in the same order on every render as required by React
+  - Moved the bug from active to resolved status
 
 - Planning and implementing Playwright for end-to-end testing:
   - Creating a comprehensive implementation plan
