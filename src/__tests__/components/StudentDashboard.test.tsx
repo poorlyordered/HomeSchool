@@ -272,8 +272,12 @@ describe("StudentDashboard Component", () => {
     // Check that signOut was called
     expect(signOut).toHaveBeenCalled();
 
-    // Check that the error was logged
-    expect(consoleSpy).toHaveBeenCalledWith("Error signing out:", mockError);
+    // Check that the error was logged with the new structured format
+    expect(consoleSpy).toHaveBeenCalled();
+    // The first argument to console.error should include "Error details:"
+    expect(consoleSpy.mock.calls[0][0]).toContain("Error details:");
+    // The second argument should be an object containing the original error
+    expect(consoleSpy.mock.calls[0][1].originalError).toBe(mockError);
 
     // Restore console.error
     consoleSpy.mockRestore();

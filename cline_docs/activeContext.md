@@ -14,6 +14,14 @@
 
 ## Recent Changes
 
+- Fixed TypeScript warnings for unused React imports:
+
+  - Removed unused React imports from 7 component files
+  - Affected files: NotificationManager, CategoryFilter, CourseSearch, CourseResults, SelectedCourseDisplay, StandardCourseCatalog, and CourseManagement
+  - Verified changes with linting and type checking
+  - Improved code quality and reduced unnecessary imports
+  - Aligned with React 17+ JSX transform that no longer requires React import for JSX
+
 - Implemented centralized error handling system:
 
   - Created ErrorBoundary component for catching and displaying React component errors
@@ -89,6 +97,14 @@
   - Set up foundation for future enhancements (custom courses, recommendations)
 
 ## Current Task
+
+- Fixed TypeScript warnings and created bug tickets:
+
+  - Removed unused React imports from 7 component files
+  - Created bug ticket BUG-004 for unused 'school' variable in GuardianSetup component
+  - Created bug ticket BUG-005 for conditional React hooks in TestScores component
+  - Verified changes with linting and type checking
+  - Updated Memory Bank files to document changes and new bugs
 
 - Planning and implementing Playwright for end-to-end testing:
   - Creating a comprehensive implementation plan

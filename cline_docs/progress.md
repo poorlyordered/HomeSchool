@@ -150,6 +150,26 @@
   - [x] Outlined future refactoring opportunities
   - [x] Created implementation plan for future refactoring
 
+## Code Quality Improvements
+
+- [x] Fixed TypeScript warnings for unused React imports
+  - [x] Removed unused React imports from 7 component files
+  - [x] Affected files: NotificationManager, CategoryFilter, CourseSearch, CourseResults, SelectedCourseDisplay, StandardCourseCatalog, and CourseManagement
+  - [x] Verified changes with linting and type checking
+  - [x] Improved code quality and reduced unnecessary imports
+  - [x] Aligned with React 17+ JSX transform that no longer requires React import for JSX
+
+## Bug Tracking
+
+- [x] Created bug tracking folder structure
+- [x] Implemented standardized bug report template
+- [x] Created bug tickets for identified issues:
+  - [x] BUG-001: Reset password token validation issue (P3-medium)
+  - [x] BUG-002: StudentDashboard test failure (P3-medium, resolved)
+  - [x] BUG-003: CourseManagement test timeouts (P3-medium)
+  - [x] BUG-004: Unused 'school' variable in GuardianSetup component (P4-low)
+  - [x] BUG-005: Conditional React hooks in TestScores component (P3-medium)
+
 ## Next Focus Areas
 
 1. ~~Create bug tracking folder structure (Quick Win)~~ ✓
@@ -167,11 +187,13 @@
 13. ~~Remove unused React imports from guardian components~~ ✓
 14. ~~Create Playwright implementation plan for E2E testing~~ ✓
 15. ~~Implement centralized error handling system~~ ✓
-16. Implement Playwright for E2E testing (Project Phase)
-17. Update tests for GuardianDashboard to work with the refactored components
-18. Implement tests for TestScoreManagement component (Deep Work)
-19. Implement tests for TestScores component (Deep Work)
-20. Continue extending error handling to remaining components
-21. Fix other identified bugs (based on priority)
-22. Implement custom user-added courses (Enhancement)
-23. Implement course recommendations (Enhancement)
+16. ~~Fix TypeScript warnings for unused React imports~~ ✓
+17. ~~Create bug tickets for remaining linting issues~~ ✓
+18. Implement Playwright for E2E testing (Project Phase)
+19. Update tests for GuardianDashboard to work with the refactored components
+20. Implement tests for TestScoreManagement component (Deep Work)
+21. Implement tests for TestScores component (Deep Work)
+22. Continue extending error handling to remaining components
+23. Fix identified bugs (based on priority)
+24. Implement custom user-added courses (Enhancement)
+25. Implement course recommendations (Enhancement)
