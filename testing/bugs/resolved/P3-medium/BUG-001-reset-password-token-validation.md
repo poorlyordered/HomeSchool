@@ -1,6 +1,6 @@
 # BUG-001: ResetPassword - Insufficient Token Validation
 
-## Status: Active
+## Status: Resolved
 
 ## Priority: P3 (Medium)
 
@@ -36,4 +36,13 @@ The component shows the password reset form as long as any token is present, reg
 
 ## Resolution
 
-(To be filled when fixed)
+Fixed by implementing token validation in the ResetPassword component:
+
+1. Added a new `validateResetToken` function in `auth.ts` that uses Supabase's `verifyOtp` method to validate the token before showing the password reset form.
+2. Updated the ResetPassword component to call this validation function in the useEffect hook when the component mounts.
+3. Added loading state to show a spinner while the token is being validated.
+4. Only shows the password reset form if the token is valid.
+5. Shows an appropriate error message if the token is invalid or expired.
+6. Updated tests to cover the new token validation functionality.
+
+This improves the user experience by immediately showing an error message for invalid tokens, rather than letting users fill out the form only to have it fail on submission.

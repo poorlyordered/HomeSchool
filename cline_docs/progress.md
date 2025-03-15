@@ -164,10 +164,10 @@
 - [x] Created bug tracking folder structure
 - [x] Implemented standardized bug report template
 - [x] Created bug tickets for identified issues:
-  - [x] BUG-001: Reset password token validation issue (P3-medium)
+  - [x] BUG-001: Reset password token validation issue (P3-medium, resolved)
   - [x] BUG-002: StudentDashboard test failure (P3-medium, resolved)
-  - [x] BUG-003: CourseManagement test timeouts (P3-medium)
-  - [x] BUG-004: Unused 'school' variable in GuardianSetup component (P4-low)
+  - [x] BUG-003: CourseManagement test timeouts (P3-medium, resolved)
+  - [x] BUG-004: Unused 'school' variable in GuardianSetup component (P4-low, resolved)
   - [x] BUG-005: Conditional React hooks in TestScores component (P3-medium, resolved)
 
 ## Next Focus Areas
@@ -190,11 +190,13 @@
 16. ~~Fix TypeScript warnings for unused React imports~~ ✓
 17. ~~Create bug tickets for remaining linting issues~~ ✓
 18. ~~Fix conditional React hooks in TestScores component (BUG-005)~~ ✓
-19. Implement Playwright for E2E testing (Project Phase)
-20. Update tests for GuardianDashboard to work with the refactored components
-21. Implement tests for TestScoreManagement component (Deep Work)
-22. Implement tests for TestScores component (Deep Work)
-23. Continue extending error handling to remaining components
-24. Fix remaining identified bugs (based on priority)
-25. Implement custom user-added courses (Enhancement)
-26. Implement course recommendations (Enhancement)
+19. ~~Fix reset password token validation (BUG-001)~~ ✓
+20. ~~Fix CourseManagement test timeouts (BUG-003)~~ ✓
+21. ~~Fix unused variable in GuardianSetup component (BUG-004)~~ ✓
+22. Implement Playwright for E2E testing (Project Phase)
+23. Update tests for GuardianDashboard to work with the refactored components
+24. Implement tests for TestScoreManagement component (Deep Work)
+25. Implement tests for TestScores component (Deep Work)
+26. Continue extending error handling to remaining components
+27. Implement custom user-added courses (Enhancement)
+28. Implement course recommendations (Enhancement)

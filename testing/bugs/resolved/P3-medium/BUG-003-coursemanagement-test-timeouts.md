@@ -6,7 +6,7 @@ P3 - Medium
 
 ## Status
 
-Active
+Resolved
 
 ## Date Reported
 
@@ -90,3 +90,28 @@ None
 ## Notes
 
 The component itself works correctly in the application. This is specifically an issue with the automated tests.
+
+## Resolution
+
+Fixed the test timeouts by making the following changes:
+
+1. Replaced `userEvent` with `fireEvent` for simpler, synchronous event handling:
+
+   - Changed `userEvent.click()` to `fireEvent.click()`
+   - Changed `userEvent.type()` to `fireEvent.change()`
+   - This eliminates the need for complex async handling in the tests
+
+2. Improved timer mocking:
+
+   - Updated `jest.useFakeTimers()` to use `{ advanceTimers: true }` option
+   - This ensures timers are automatically advanced when needed
+
+3. Removed unnecessary timeouts:
+
+   - Removed the 15000ms timeouts from test cases
+   - Tests now run faster and more reliably
+
+4. Fixed ESLint errors:
+   - Removed unused imports (waitFor, userEvent, useCourseManagement)
+
+These changes make the tests more reliable and faster to run, while still providing the same level of test coverage.

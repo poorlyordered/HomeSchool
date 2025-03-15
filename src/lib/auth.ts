@@ -6,6 +6,11 @@ export interface VerificationResult {
   message?: string;
 }
 
+export interface TokenValidationResult {
+  valid: boolean;
+  message?: string;
+}
+
 export async function signUp(
   email: string,
   password: string,
@@ -46,6 +51,46 @@ export async function requestPasswordReset(email: string): Promise<void> {
   });
 
   if (error) throw error;
+}
+
+export async function validateResetToken(
+  token: string,
+): Promise<TokenValidationResult> {
+  try {
+    // Attempt to get the user associated with this token
+    // This is a lightweight check that doesn't actually reset the password
+    const { data, error } = await supabase.auth.verifyOtp({
+      token_hash: token,
+      type: "recovery",
+    });
+
+    if (error) {
+      return {
+        valid: false,
+        message:
+          error.message ||
+          "Invalid or expired token. Please request a new password reset link.",
+      };
+    }
+
+    if (!data.user) {
+      return {
+        valid: false,
+        message: "Invalid token. Please request a new password reset link.",
+      };
+    }
+
+    return { valid: true };
+  } catch (error) {
+    console.error("Error validating reset token:", error);
+    return {
+      valid: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "An error occurred while validating your token. Please try again or request a new link.",
+    };
+  }
 }
 
 export async function resetPassword(newPassword: string): Promise<void> {

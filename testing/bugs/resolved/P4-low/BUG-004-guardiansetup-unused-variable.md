@@ -1,6 +1,6 @@
 # BUG-004: GuardianSetup - Unused 'school' variable
 
-## Status: Active
+## Status: Resolved
 
 ## Priority: P4 (Low)
 
@@ -49,4 +49,14 @@ const { data: school, error: schoolError } = await supabase
 
 ## Resolution
 
-(To be filled when fixed)
+Fixed by removing the unused 'school' variable from the destructuring assignment in the GuardianSetup component. The variable was not being used anywhere in the component, so it was removed to eliminate the TypeScript/ESLint warning.
+
+```typescript
+// Before:
+const { data: school, error: schoolError } = await supabase;
+
+// After:
+const { error: schoolError } = await supabase;
+```
+
+This change resolves the ESLint warning while maintaining the same functionality.

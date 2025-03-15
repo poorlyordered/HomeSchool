@@ -1,5 +1,4 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { CourseManagement } from "../../components/CourseManagement";
 import { supabase } from "../../lib/supabase";
 import type { StandardCourse, Course } from "../../types";
@@ -212,9 +211,9 @@ describe("CourseManagement Component", () => {
     "../../hooks/useCourseManagement",
   ).useCourseManagement;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
-    jest.useFakeTimers();
+    jest.useFakeTimers({ advanceTimers: true });
 
     // Setup default mock behavior for Supabase
     (supabase.from as jest.Mock).mockImplementation((table) => {
@@ -298,7 +297,7 @@ describe("CourseManagement Component", () => {
     jest.useRealTimers();
   });
 
-  it("renders the component with the hook data", () => {
+  it("renders the component with the hook data", async () => {
     render(
       <CourseManagement
         studentId={mockStudentId}
@@ -336,11 +335,12 @@ describe("CourseManagement Component", () => {
     );
 
     // Click the mock select course button
-    await userEvent.click(screen.getByTestId("mock-select-course"));
+    const selectButton = screen.getByTestId("mock-select-course");
+    fireEvent.click(selectButton);
 
     // Check that handleCourseSelect was called with the correct course
     expect(mockHandleCourseSelect).toHaveBeenCalledWith(mockStandardCourses[0]);
-  }, 15000);
+  });
 
   it("handles form submission", async () => {
     const mockHandleSubmit = jest.fn((e) => {
@@ -361,11 +361,12 @@ describe("CourseManagement Component", () => {
     );
 
     // Submit the form
-    await userEvent.click(screen.getByTestId("mock-submit-button"));
+    const submitButton = screen.getByTestId("mock-submit-button");
+    fireEvent.click(submitButton);
 
     // Check that handleSubmit was called
     expect(mockHandleSubmit).toHaveBeenCalled();
-  }, 15000);
+  });
 
   it("handles search query changes", async () => {
     const mockSetSearchQuery = jest.fn();
@@ -384,11 +385,12 @@ describe("CourseManagement Component", () => {
     );
 
     // Type in the search input
-    await userEvent.type(screen.getByTestId("mock-search-input"), "Algebra");
+    const searchInput = screen.getByTestId("mock-search-input");
+    fireEvent.change(searchInput, { target: { value: "Algebra" } });
 
     // Check that setSearchQuery was called with the correct value
     expect(mockSetSearchQuery).toHaveBeenCalledWith("Algebra");
-  }, 15000);
+  });
 
   it("handles category filter changes", async () => {
     const mockSetSelectedCategory = jest.fn();
@@ -453,9 +455,9 @@ describe("CourseManagement Component", () => {
 
     // Click the close button
     const closeButton = screen.getByText("×");
-    await userEvent.click(closeButton);
+    fireEvent.click(closeButton);
 
     // Check that onClose was called
     expect(mockOnClose).toHaveBeenCalled();
-  }, 15000);
+  });
 });

@@ -1,11 +1,12 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { ResetPassword } from "../../components/ResetPassword";
-import { resetPassword } from "../../lib/auth";
+import { resetPassword, validateResetToken } from "../../lib/auth";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 // Mock the auth functions
 jest.mock("../../lib/auth", () => ({
   resetPassword: jest.fn(),
+  validateResetToken: jest.fn(),
 }));
 
 // Mock react-router-dom
@@ -23,14 +24,43 @@ describe("ResetPassword Component", () => {
     (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
   });
 
-  it("renders error message when token is missing", () => {
+  it("shows loading state while validating token", () => {
+    // Mock useSearchParams to return a token
+    (useSearchParams as jest.Mock).mockReturnValue([
+      { get: () => "valid-token" },
+      mockSetSearchParams,
+    ]);
+
+    // Mock validateResetToken to return a promise that doesn't resolve immediately
+    (validateResetToken as jest.Mock).mockReturnValue(new Promise(() => {}));
+
+    render(<ResetPassword />);
+
+    // Check for loading indicator
+    expect(
+      screen.getByText(/Validating your reset token/i),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("status")).toBeInTheDocument(); // The spinner
+  });
+
+  it("renders error message when token is missing", async () => {
     // Mock useSearchParams to return empty token
     (useSearchParams as jest.Mock).mockReturnValue([
       { get: () => null },
       mockSetSearchParams,
     ]);
 
+    // Mock validateResetToken to resolve immediately for this test
+    (validateResetToken as jest.Mock).mockResolvedValue({ valid: false });
+
     render(<ResetPassword />);
+
+    // Wait for validation to complete
+    await waitFor(() => {
+      expect(
+        screen.queryByText(/Validating your reset token/i),
+      ).not.toBeInTheDocument();
+    });
 
     // Check for error message
     expect(
@@ -44,14 +74,60 @@ describe("ResetPassword Component", () => {
     expect(requestButton).toBeInTheDocument();
   });
 
-  it("renders the form when token is present", () => {
+  it("renders error message when token is invalid", async () => {
+    // Mock useSearchParams to return a token
+    (useSearchParams as jest.Mock).mockReturnValue([
+      { get: () => "invalid-token" },
+      mockSetSearchParams,
+    ]);
+
+    // Mock validateResetToken to return invalid result
+    (validateResetToken as jest.Mock).mockResolvedValue({
+      valid: false,
+      message: "Invalid token. Please request a new password reset link.",
+    });
+
+    render(<ResetPassword />);
+
+    // Wait for validation to complete
+    await waitFor(() => {
+      expect(
+        screen.queryByText(/Validating your reset token/i),
+      ).not.toBeInTheDocument();
+    });
+
+    // Check for error message
+    expect(
+      screen.getByText(
+        /Invalid token. Please request a new password reset link./i,
+      ),
+    ).toBeInTheDocument();
+
+    // Check for request new link button
+    const requestButton = screen.getByRole("button", {
+      name: /Request New Reset Link/i,
+    });
+    expect(requestButton).toBeInTheDocument();
+  });
+
+  it("renders the form when token is valid", async () => {
     // Mock useSearchParams to return a token
     (useSearchParams as jest.Mock).mockReturnValue([
       { get: () => "valid-token" },
       mockSetSearchParams,
     ]);
 
+    // Mock validateResetToken to return valid result
+    (validateResetToken as jest.Mock).mockResolvedValue({ valid: true });
+
     render(<ResetPassword />);
+
+    // Wait for validation to complete
+    await waitFor(() => {
+      expect(
+        screen.queryByText(/Validating your reset token/i),
+      ).not.toBeInTheDocument();
+    });
 
     // Check for form elements
     expect(screen.getByLabelText(/^New Password$/i)).toBeInTheDocument();
@@ -69,6 +145,9 @@ describe("ResetPassword Component", () => {
       { get: () => "valid-token" },
       mockSetSearchParams,
     ]);
+
+    // Mock validateResetToken to return valid result
+    (validateResetToken as jest.Mock).mockResolvedValue({ valid: true });
 
     render(<ResetPassword />);
 
@@ -96,6 +175,9 @@ describe("ResetPassword Component", () => {
       { get: () => "valid-token" },
       mockSetSearchParams,
     ]);
+
+    // Mock validateResetToken to return valid result
+    (validateResetToken as jest.Mock).mockResolvedValue({ valid: true });
 
     render(<ResetPassword />);
 
@@ -125,6 +207,9 @@ describe("ResetPassword Component", () => {
       { get: () => "valid-token" },
       mockSetSearchParams,
     ]);
+
+    // Mock validateResetToken to return valid result
+    (validateResetToken as jest.Mock).mockResolvedValue({ valid: true });
 
     // Mock successful password reset
     (resetPassword as jest.Mock).mockResolvedValue(undefined);
@@ -183,6 +268,9 @@ describe("ResetPassword Component", () => {
       mockSetSearchParams,
     ]);
 
+    // Mock validateResetToken to return valid result
+    (validateResetToken as jest.Mock).mockResolvedValue({ valid: true });
+
     // Mock error during password reset
     const errorMessage = "Invalid reset token";
     (resetPassword as jest.Mock).mockRejectedValue(new Error(errorMessage));
@@ -212,12 +300,15 @@ describe("ResetPassword Component", () => {
     ).toBeInTheDocument();
   });
 
-  it("navigates to forgot password page when request new link button is clicked", () => {
+  it("navigates to forgot password page when request new link button is clicked", async () => {
     // Mock useSearchParams to return empty token
     (useSearchParams as jest.Mock).mockReturnValue([
       { get: () => null },
       mockSetSearchParams,
     ]);
+
+    // Mock validateResetToken to resolve immediately for this test
+    (validateResetToken as jest.Mock).mockResolvedValue({ valid: false });
 
     render(<ResetPassword />);
 
