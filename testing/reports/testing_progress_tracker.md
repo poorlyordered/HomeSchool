@@ -15,8 +15,8 @@ Last Updated: 2025-03-13 06:23
 - [x] GuardianManagement
 - [x] AccountSettings
 - [x] CourseManagement
-- [ ] TestScoreManagement
-- [ ] TestScores
+- [x] TestScoreManagement
+- [x] TestScores
 - [ ] TranscriptPDF
 
 ## Bugs By Status
@@ -53,8 +53,8 @@ Last Updated: 2025-03-13 06:23
 - [x] GuardianManagement component
 - [x] AccountSettings component
 - [x] CourseManagement component
-- [x] TestScoreManagement component (partial - data loading only)
-- [ ] TestScores component
+- [x] TestScoreManagement component
+- [x] TestScores component
 - [ ] TranscriptPDF component
 
 ## Next Focus Areas
@@ -64,8 +64,8 @@ Last Updated: 2025-03-13 06:23
 3. ~~Implement tests for CourseManagement component~~ ✓
 4. ~~Create Playwright implementation plan~~ ✓
 5. Implement Playwright for E2E testing
-6. Implement tests for TestScoreManagement component
-7. Implement tests for TestScores component
+6. ~~Implement tests for TestScoreManagement component~~ ✓
+7. ~~Implement tests for TestScores component~~ ✓
 8. Fix other identified bugs (based on priority)
 
 ## Progress Summary
@@ -110,7 +110,7 @@ Last Updated: 2025-03-13 06:23
   - Added proper mocking for Supabase operations and auth functions
   - All tests now passing successfully
   - Updated testing progress tracker to reflect completed work
-- Next components to test: TestScoreManagement and TestScores
+- Tests for TestScoreManagement and TestScores components have been implemented
 
 ## Notes
 

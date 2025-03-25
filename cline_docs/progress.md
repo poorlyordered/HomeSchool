@@ -76,10 +76,10 @@
   - [x] StudentManagement.tsx
   - [x] GuardianManagement.tsx
   - [x] AccountSettings.tsx
-- [ ] Implement tests for academic components (Deep Work)
+- [x] Implement tests for academic components (Deep Work)
   - [x] CourseManagement.tsx (Note: Basic tests working, advanced tests need further work)
-  - [ ] TestScoreManagement.tsx
-  - [ ] TestScores.tsx
+  - [x] TestScoreManagement.tsx
+  - [x] TestScores.tsx
 - [ ] Set up Playwright for E2E testing (Project Phase)
   - [x] Create implementation plan
   - [ ] Initial setup and configuration
@@ -193,10 +193,11 @@
 19. ~~Fix reset password token validation (BUG-001)~~ ✓
 20. ~~Fix CourseManagement test timeouts (BUG-003)~~ ✓
 21. ~~Fix unused variable in GuardianSetup component (BUG-004)~~ ✓
-22. Implement Playwright for E2E testing (Project Phase)
-23. Update tests for GuardianDashboard to work with the refactored components
-24. Implement tests for TestScoreManagement component (Deep Work)
-25. Implement tests for TestScores component (Deep Work)
-26. Continue extending error handling to remaining components
-27. Implement custom user-added courses (Enhancement)
-28. Implement course recommendations (Enhancement)
+22. ~~Implement guardian invitation system~~ ✓
+23. Implement Playwright for E2E testing (Project Phase)
+24. Update tests for GuardianDashboard to work with the refactored components
+25. ~~Implement tests for TestScoreManagement component (Deep Work)~~ ✓
+26. ~~Implement tests for TestScores component (Deep Work)~~ ✓
+27. Continue extending error handling to remaining components
+28. Implement custom user-added courses (Enhancement)
+29. Implement course recommendations (Enhancement)

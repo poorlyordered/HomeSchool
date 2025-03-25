@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { signIn, signUp } from "../lib/auth";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { signIn, signUp, validateInvitation } from "../lib/auth";
 import { handleAndDisplayError } from "../lib/errorHandling";
 
 interface AuthFormProps {
@@ -8,14 +9,51 @@ interface AuthFormProps {
 }
 
 export function AuthForm({ mode, onSuccess }: AuthFormProps) {
+  const [searchParams] = useSearchParams();
+  const invitationToken = searchParams.get("invitation");
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState<"guardian" | "student">("guardian");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [validatingInvitation, setValidatingInvitation] = useState(false);
+  const [invitationDetails, setInvitationDetails] = useState<{
+    email: string;
+    role: "guardian" | "student";
+  } | null>(null);
 
   const [verificationSent, setVerificationSent] = useState(false);
+
+  useEffect(() => {
+    async function validateToken() {
+      if (!invitationToken) return;
+
+      setValidatingInvitation(true);
+      try {
+        const result = await validateInvitation(invitationToken);
+
+        if (result.valid && result.invitation) {
+          setInvitationDetails({
+            email: result.invitation.email,
+            role: result.invitation.role,
+          });
+          setEmail(result.invitation.email);
+          setRole(result.invitation.role);
+        } else {
+          setError(result.message || "Invalid invitation token");
+        }
+      } catch (err) {
+        handleAndDisplayError(err, "AuthForm.validateToken");
+        setError("Failed to validate invitation");
+      } finally {
+        setValidatingInvitation(false);
+      }
+    }
+
+    validateToken();
+  }, [invitationToken]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +67,13 @@ export function AuthForm({ mode, onSuccess }: AuthFormProps) {
         setError("Account created! Please check your email for verification.");
       } else {
         await signIn(email, password);
+
+        // If there's an invitation token, redirect to the invitation page
+        if (invitationToken) {
+          window.location.href = `/invite/${invitationToken}`;
+          return;
+        }
+
         onSuccess();
       }
     } catch (err) {
@@ -41,8 +86,32 @@ export function AuthForm({ mode, onSuccess }: AuthFormProps) {
     }
   };
 
+  if (validatingInvitation) {
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-center">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+        </div>
+        <p className="text-center text-gray-600">Validating invitation...</p>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {invitationDetails && (
+        <div className="p-3 bg-blue-50 text-blue-800 rounded-md mb-4">
+          <p>
+            You've been invited to join as a{" "}
+            <span className="font-semibold">{invitationDetails.role}</span>.
+          </p>
+          <p className="mt-1">
+            Please {mode === "signin" ? "sign in" : "create an account"} with{" "}
+            <span className="font-semibold">{invitationDetails.email}</span> to
+            accept the invitation.
+          </p>
+        </div>
+      )}
       <div>
         <label
           htmlFor="email"

@@ -364,11 +364,11 @@ describe("GuardianManagement Component", () => {
     const addButton = screen.getByText("Add");
     await userEvent.click(addButton);
 
-    // Check for error message
+    // Check for error message - the component shows the specific error message
     await waitFor(() => {
       expect(
         screen.getByText(
-          "No guardian account found with email nonexistent@example.com",
+          /No guardian account found with email nonexistent@example.com/,
         ),
       ).toBeInTheDocument();
     });

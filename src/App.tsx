@@ -15,6 +15,7 @@ import { EmailVerification } from "./components/EmailVerification";
 import { ForgotPassword } from "./components/ForgotPassword";
 import { ResetPassword } from "./components/ResetPassword";
 import { SessionExpired } from "./components/SessionExpired";
+import { InvitationAccept } from "./components/InvitationAccept";
 import { supabase } from "./lib/supabase";
 import type { User } from "./types";
 
@@ -137,6 +138,10 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/session-expired" element={<SessionExpired />} />
+          <Route
+            path="/invite/:token"
+            element={<InvitationAccept user={user} />}
+          />
           <Route
             path="/signin"
             element={

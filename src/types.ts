@@ -94,3 +94,17 @@ export interface Student {
   transcriptMeta: TranscriptMeta;
   guardians?: Profile[];
 }
+
+export interface Invitation {
+  id: string;
+  email: string;
+  role: "guardian" | "student";
+  student_id: string;
+  inviter_id: string;
+  token: string;
+  status: "pending" | "accepted" | "expired";
+  created_at: string;
+  expires_at: string;
+  student?: StudentInfo;
+  inviter?: Profile;
+}
