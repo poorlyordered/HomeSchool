@@ -186,11 +186,66 @@ export function ExampleComponent({
 - Document bugs using markdown files in priority folders
 - Review tasks weekly and select based on available energy
 
-### Unit Tests
-- Co-locate test files with components
-- Follow Arrange-Act-Assert pattern
+### Testing Best Practices [TEST-RULES]
+
+### Test Organization and Structure
+- Co-locate test files with implementation files for better discoverability
+  ```
+  src/
+  ├── components/
+  │   ├── Button.tsx
+  │   ├── Button.test.tsx  // Co-located test
+  │   ├── UserProfile.tsx
+  │   └── UserProfile.test.tsx
+  ```
+- Use consistent naming conventions for test files (ComponentName.test.tsx)
+- Group tests logically by feature or functionality
+- Follow Arrange-Act-Assert pattern in all tests
 - Test both success and error cases
 - Test component props and events
+
+### Test Performance Optimization
+- Create centralized mock factories for external dependencies
+- Use dedicated test setup files for common mocks
+- Prefer `fireEvent` over `userEvent` for synchronous event handling when appropriate
+- Use proper timer mocking with `jest.useFakeTimers({ advanceTimers: true })`
+- Implement proper cleanup in `afterEach` blocks
+- Break down large test files into smaller, focused test suites
+- Use granular test cases instead of complex scenarios
+- Implement proper test isolation to prevent test interdependence
+
+### Test Reliability Enhancements
+- Create helper functions for common async testing patterns
+- Implement consistent timeout handling
+- Use a standardized approach for waiting for component updates
+- Create typed mock implementations for better type safety
+- Use realistic mock data generation
+- Apply consistent mock reset patterns
+- Add clear error reporting in test failures
+- Implement custom matchers for common assertions when needed
+
+### Jest Configuration Optimization
+- Configure maxWorkers based on available CPU cores
+- Enable test caching for faster re-runs
+- Update test matching patterns for co-located tests
+- Optimize transform configuration for faster execution
+- Add support for test tagging and filtering when needed
+
+### Test Coverage Guidelines
+- Aim for comprehensive component test coverage
+- Include edge case testing for critical components
+- Implement integration tests for component interactions
+- Test data flow between related components
+- Verify event handling across component boundaries
+- Prioritize E2E testing for critical user flows
+
+### Test Implementation Approach
+- Apply energy/focus units framework to test implementation:
+  - **Quick Win**: Simple component tests, test setup, bug fixes
+  - **Sprint**: Feature component tests, test structure improvements
+  - **Deep Work**: Complex component tests, integration tests
+  - **Project Phase**: E2E testing implementation
+- Track test implementation progress in appropriate documentation
 
 ## Security
 - Use Supabase Auth for authentication

@@ -111,6 +111,18 @@
 
 ## Current Task
 
+- Created comprehensive test performance improvement plan:
+
+  - Identified key improvement areas for test organization, performance, and reliability
+  - Developed a phased implementation approach using energy/focus units framework
+  - Created a progress tracking system for monitoring implementation
+  - Documented specific recommendations for standardizing mock implementations
+  - Outlined strategies for optimizing test execution and reducing complexity
+  - Added plan for test structure improvements and coverage expansion
+  - Documented in testing/docs/test_performance_improvement_plan.md
+  - Updated testing progress tracker to include the new plan
+  - Added testing best practices to boltrules.clinerules as [TEST-RULES]
+
 - Implemented guardian invitation system:
 
   - Created database schema for invitations:
@@ -150,7 +162,17 @@
 
 ### Current Testing Session (In Progress)
 
-1. Implement Playwright for end-to-end testing
+1. Implement Test Performance Improvement Plan
+
+   - Phase 1: Quick Wins
+     - Standardize Mock Implementation
+     - Fix Test Timeouts
+     - Optimize Jest Configuration
+   - Phase 2: Test Structure Improvements
+   - Phase 3: Test Coverage Expansion
+   - Phase 4: E2E Testing Implementation
+
+2. Implement Playwright for end-to-end testing
    - Set up initial configuration
    - Create page object models
    - Implement authentication flow tests
