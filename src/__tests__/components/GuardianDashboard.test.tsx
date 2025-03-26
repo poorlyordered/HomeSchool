@@ -117,7 +117,7 @@ const originalLocation = window.location;
 beforeAll(() => {
   // @ts-expect-error - Intentionally modifying window.location for testing
   delete window.location;
-  window.location = { href: "" } as Location;
+  window.location = { href: "" } as unknown as Location;
 });
 
 afterAll(() => {
