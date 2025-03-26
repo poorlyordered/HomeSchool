@@ -1,5 +1,7 @@
 module.exports = {
   preset: 'ts-jest',
+  cache: true, // Explicitly enable caching
+  maxWorkers: '50%', // Limit parallel workers to 50% of CPU cores
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.cjs'],
   moduleNameMapper: {

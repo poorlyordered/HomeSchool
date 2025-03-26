@@ -95,6 +95,9 @@
 ## Testing Patterns
 
 - Jest and React Testing Library for unit and component testing
+- Optimized Jest configuration:
+  - Cache enabled for faster subsequent test runs
+  - Parallel execution with maxWorkers set to 50% of CPU cores
 - Separate TypeScript configuration for tests with `tsconfig.jest.json`
 - Mock implementations for external dependencies
 - Component testing with user interaction simulation

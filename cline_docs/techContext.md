@@ -98,6 +98,9 @@ All dependencies are managed through package.json with specific version requirem
 1. Unit and Component Testing
 
    - Jest and React Testing Library
+   - Optimized Jest configuration:
+     - Cache enabled for faster subsequent test runs
+     - Parallel execution with maxWorkers set to 50% of CPU cores
    - Mock implementations for external dependencies
    - Component testing with user interaction simulation
    - Asynchronous test handling with `waitFor` and `async/await`
