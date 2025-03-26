@@ -33,6 +33,8 @@
 - [x] Created comprehensive testing and bug tracking plan with energy/focus units
 - [x] Created refactoring plan document for code maintainability
 - [x] Created Playwright implementation plan for end-to-end testing
+- [x] Created test performance improvement plan
+- [x] Added testing best practices to boltrules.clinerules as [TEST-RULES]
 
 ## Authentication Enhancements
 
@@ -80,6 +82,23 @@
   - [x] CourseManagement.tsx (Note: Basic tests working, advanced tests need further work)
   - [x] TestScoreManagement.tsx
   - [x] TestScores.tsx
+- [x] Create test performance improvement plan (Sprint)
+  - [x] Identify key improvement areas for test organization, performance, and reliability
+  - [x] Develop phased implementation approach using energy/focus units framework
+  - [x] Create progress tracking system for monitoring implementation
+  - [x] Document specific recommendations for standardizing mock implementations
+  - [x] Outline strategies for optimizing test execution and reducing complexity
+  - [x] Add plan for test structure improvements and coverage expansion
+  - [x] Add testing best practices to boltrules.clinerules
+- [ ] Implement test performance improvements (Project Phase)
+  - [ ] Phase 1: Standardize Mock Implementation (Quick Win)
+  - [ ] Phase 1: Fix Test Timeouts (Quick Win)
+  - [ ] Phase 1: Optimize Jest Configuration (Quick Win)
+  - [ ] Phase 2: Implement Co-location Pattern (Sprint)
+  - [ ] Phase 2: Standardize Test Structure (Sprint)
+  - [ ] Phase 2: Enhance Mock Stability (Sprint)
+  - [ ] Phase 3: Complete Component Test Coverage (Deep Work)
+  - [ ] Phase 3: Implement Integration Tests (Deep Work)
 - [ ] Set up Playwright for E2E testing (Project Phase)
   - [x] Create implementation plan
   - [ ] Initial setup and configuration
@@ -194,10 +213,13 @@
 20. ~~Fix CourseManagement test timeouts (BUG-003)~~ ✓
 21. ~~Fix unused variable in GuardianSetup component (BUG-004)~~ ✓
 22. ~~Implement guardian invitation system~~ ✓
-23. Implement Playwright for E2E testing (Project Phase)
-24. Update tests for GuardianDashboard to work with the refactored components
-25. ~~Implement tests for TestScoreManagement component (Deep Work)~~ ✓
-26. ~~Implement tests for TestScores component (Deep Work)~~ ✓
-27. Continue extending error handling to remaining components
-28. Implement custom user-added courses (Enhancement)
-29. Implement course recommendations (Enhancement)
+23. ~~Create test performance improvement plan~~ ✓
+24. ~~Add testing best practices to boltrules.clinerules~~ ✓
+25. Implement test performance improvements - Phase 1 (Quick Wins)
+26. Implement Playwright for E2E testing (Project Phase)
+27. Update tests for GuardianDashboard to work with the refactored components
+28. ~~Implement tests for TestScoreManagement component (Deep Work)~~ ✓
+29. ~~Implement tests for TestScores component (Deep Work)~~ ✓
+30. Continue extending error handling to remaining components
+31. Implement custom user-added courses (Enhancement)
+32. Implement course recommendations (Enhancement)
