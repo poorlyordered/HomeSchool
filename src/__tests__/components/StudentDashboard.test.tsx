@@ -1,5 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { StudentDashboard } from "../../components/StudentDashboard";
 import { signOut } from "../../lib/auth";
 import { supabase } from "../../lib/supabase";
@@ -47,6 +46,8 @@ afterAll(() => {
 });
 
 describe("StudentDashboard Component", () => {
+  jest.useFakeTimers(); // Add timer mocking
+
   // Mock user data
   const mockUser: User = {
     id: "user-123",
@@ -193,14 +194,14 @@ describe("StudentDashboard Component", () => {
 
     // Click the Account Settings button
     const settingsButton = screen.getByText(/Account Settings/i);
-    await userEvent.click(settingsButton);
+    fireEvent.click(settingsButton);
 
     // Check that the account settings modal is displayed
     expect(screen.getByTestId("account-settings-modal")).toBeInTheDocument();
 
     // Close the modal
     const closeButton = screen.getByText("Close");
-    await userEvent.click(closeButton);
+    fireEvent.click(closeButton);
 
     // Check that the modal is closed
     expect(
@@ -231,7 +232,7 @@ describe("StudentDashboard Component", () => {
 
     // Click the Log Out button
     const logoutButton = screen.getByText(/Log Out/i);
-    await userEvent.click(logoutButton);
+    fireEvent.click(logoutButton);
 
     // Check that signOut was called
     expect(signOut).toHaveBeenCalled();
@@ -267,7 +268,7 @@ describe("StudentDashboard Component", () => {
 
     // Click the Log Out button
     const logoutButton = screen.getByText(/Log Out/i);
-    await userEvent.click(logoutButton);
+    fireEvent.click(logoutButton);
 
     // Check that signOut was called
     expect(signOut).toHaveBeenCalled();

@@ -1,5 +1,4 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { StudentManagement } from "../../components/StudentManagement";
 import { supabase } from "../../lib/supabase";
 import type { User } from "../../types";
@@ -31,6 +30,8 @@ afterAll(() => {
 });
 
 describe("StudentManagement Component", () => {
+  jest.useFakeTimers(); // Add timer mocking
+
   // Mock user data
   const mockUser: User = {
     id: "user-123",
@@ -227,7 +228,7 @@ describe("StudentManagement Component", () => {
     });
 
     // Click add student button
-    await userEvent.click(screen.getByText("Add Student"));
+    fireEvent.click(screen.getByText("Add Student"));
 
     // Fill out the form - using getAllByRole since labels might not be properly associated
     const nameInput = screen.getAllByRole("textbox")[0];
@@ -242,8 +243,8 @@ describe("StudentManagement Component", () => {
 
     // Use try-catch to handle potential errors with form inputs
     try {
-      await userEvent.type(nameInput, "New Student");
-      await userEvent.type(idInput, "S003");
+      fireEvent.change(nameInput, { target: { value: "New Student" } });
+      fireEvent.change(idInput, { target: { value: "S003" } });
 
       // Use a different approach for date inputs
       if (birthDateInput) {
@@ -259,7 +260,7 @@ describe("StudentManagement Component", () => {
 
     // Try to submit the form
     try {
-      await userEvent.click(screen.getByText("Save Student"));
+      fireEvent.click(screen.getByText("Save Student"));
     } catch (error) {
       console.warn("Error clicking Save Student button:", error);
       // Manually trigger the mock since the button click might fail
@@ -343,14 +344,14 @@ describe("StudentManagement Component", () => {
 
     // Click edit button for the first student
     const editButtons = screen.getAllByTitle("Edit student");
-    await userEvent.click(editButtons[0]);
+    fireEvent.click(editButtons[0]);
 
     // Check that form is populated with student data and update it
     // Using getAllByRole since labels might not be properly associated
     const nameInput = screen.getAllByRole("textbox")[0];
 
-    await userEvent.clear(nameInput);
-    await userEvent.type(nameInput, "Updated Name");
+    fireEvent.change(nameInput, { target: { value: "" } });
+    fireEvent.change(nameInput, { target: { value: "Updated Name" } });
 
     // Directly trigger the mock since the button click is unreliable
     console.log("Using direct mock approach for student update");
@@ -427,7 +428,7 @@ describe("StudentManagement Component", () => {
 
     // Click delete button for the first student
     const deleteButtons = screen.getAllByTitle("Delete student");
-    await userEvent.click(deleteButtons[0]);
+    fireEvent.click(deleteButtons[0]);
 
     // Check that confirm was called
     expect(window.confirm).toHaveBeenCalledWith(
@@ -480,7 +481,7 @@ describe("StudentManagement Component", () => {
 
     // Click delete button for the first student
     const deleteButtons = screen.getAllByTitle("Delete student");
-    await userEvent.click(deleteButtons[0]);
+    fireEvent.click(deleteButtons[0]);
 
     // Check that confirm was called
     expect(window.confirm).toHaveBeenCalledWith(
@@ -529,7 +530,7 @@ describe("StudentManagement Component", () => {
 
     // Search for "Jane"
     const searchInput = screen.getByPlaceholderText("Search students...");
-    await userEvent.type(searchInput, "Jane");
+    fireEvent.change(searchInput, { target: { value: "Jane" } });
 
     // Check that only Jane Smith is displayed
     expect(screen.getByText("Jane Smith")).toBeInTheDocument();
@@ -571,7 +572,7 @@ describe("StudentManagement Component", () => {
 
     // Filter by graduation year 2029
     const filterInput = screen.getByPlaceholderText("Filter by grad year...");
-    await userEvent.type(filterInput, "2029");
+    fireEvent.change(filterInput, { target: { value: "2029" } });
 
     // Check that only Jane Smith is displayed
     expect(screen.getByText("Jane Smith")).toBeInTheDocument();
@@ -612,13 +613,13 @@ describe("StudentManagement Component", () => {
 
     // Click manage guardians button for the first student
     const guardianButtons = screen.getAllByTitle("Manage guardians");
-    await userEvent.click(guardianButtons[0]);
+    fireEvent.click(guardianButtons[0]);
 
     // Check that guardian management modal is displayed
     expect(screen.getByTestId("guardian-management-modal")).toBeInTheDocument();
 
     // Close the guardian management modal
-    await userEvent.click(screen.getByText("Close Guardian Management"));
+    fireEvent.click(screen.getByText("Close Guardian Management"));
 
     // Check that guardian management modal is closed
     expect(
@@ -636,7 +637,7 @@ describe("StudentManagement Component", () => {
     );
 
     // Click the close button
-    await userEvent.click(screen.getByText("×"));
+    fireEvent.click(screen.getByText("×"));
 
     // Check that onClose was called
     expect(mockOnClose).toHaveBeenCalled();

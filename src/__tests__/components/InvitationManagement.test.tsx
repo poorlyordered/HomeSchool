@@ -1,5 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { InvitationManagement } from "../../components/InvitationManagement";
 import {
   createInvitation,
@@ -34,6 +33,7 @@ afterAll(() => {
 });
 
 describe("InvitationManagement Component", () => {
+  jest.useFakeTimers(); // Add timer mocking
   const mockStudentId = "student-1";
   const mockStudentName = "John Doe";
   const mockOnClose = jest.fn();
@@ -169,10 +169,9 @@ describe("InvitationManagement Component", () => {
     });
 
     // Fill out the form
-    await userEvent.type(
-      screen.getByLabelText(/email address/i),
-      "newinvite@example.com",
-    );
+    fireEvent.change(screen.getByLabelText(/email address/i), {
+      target: { value: "newinvite@example.com" },
+    });
 
     // Select role (guardian is default)
     const roleSelect = screen.getByLabelText(/role/i);
@@ -180,7 +179,7 @@ describe("InvitationManagement Component", () => {
 
     // Submit the form by clicking the submit button
     const submitButton = screen.getByText(/send invitation/i);
-    await userEvent.click(submitButton);
+    fireEvent.click(submitButton);
 
     // Check that createInvitation was called with the correct arguments
     expect(createInvitation).toHaveBeenCalledWith(
@@ -220,14 +219,13 @@ describe("InvitationManagement Component", () => {
     });
 
     // Fill out the form
-    await userEvent.type(
-      screen.getByLabelText(/email address/i),
-      "error@example.com",
-    );
+    fireEvent.change(screen.getByLabelText(/email address/i), {
+      target: { value: "error@example.com" },
+    });
 
     // Submit the form by clicking the submit button
     const submitButton = screen.getByText(/send invitation/i);
-    await userEvent.click(submitButton);
+    fireEvent.click(submitButton);
 
     // Check for error message
     await waitFor(() => {
@@ -258,7 +256,7 @@ describe("InvitationManagement Component", () => {
 
     // Find and click the resend button for the pending invitation
     const resendButton = screen.getByTitle("Resend invitation");
-    await userEvent.click(resendButton);
+    fireEvent.click(resendButton);
 
     // Check that resendInvitation was called with the correct arguments
     expect(resendInvitation).toHaveBeenCalledWith("inv-1");
@@ -298,7 +296,7 @@ describe("InvitationManagement Component", () => {
 
     // Find and click the delete button for the first invitation
     const deleteButtons = screen.getAllByTitle("Delete invitation");
-    await userEvent.click(deleteButtons[0]);
+    fireEvent.click(deleteButtons[0]);
 
     // Check that confirm was called
     expect(window.confirm).toHaveBeenCalledWith(
@@ -337,7 +335,7 @@ describe("InvitationManagement Component", () => {
 
     // Find and click the delete button for the first invitation
     const deleteButtons = screen.getAllByTitle("Delete invitation");
-    await userEvent.click(deleteButtons[0]);
+    fireEvent.click(deleteButtons[0]);
 
     // Check that confirm was called
     expect(window.confirm).toHaveBeenCalledWith(
@@ -388,7 +386,7 @@ describe("InvitationManagement Component", () => {
 
     // Click the close button
     const closeButton = screen.getByText("×");
-    await userEvent.click(closeButton);
+    fireEvent.click(closeButton);
 
     // Check that onClose was called
     expect(mockOnClose).toHaveBeenCalled();

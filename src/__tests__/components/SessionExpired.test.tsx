@@ -1,7 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { SessionExpired } from "../../components/SessionExpired";
 import { useNavigate } from "react-router-dom";
-import userEvent from "@testing-library/user-event";
 
 // Mock react-router-dom
 jest.mock("react-router-dom", () => ({
@@ -60,12 +59,10 @@ describe("SessionExpired Component", () => {
   });
 
   it("navigates to sign in page when button is clicked", async () => {
-    const user = userEvent.setup();
-
     render(<SessionExpired />);
 
     // Click the sign in button
-    await user.click(screen.getByRole("button", { name: /Sign In Now/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Sign In Now/i }));
 
     // Check if navigate was called with correct path
     expect(mockNavigate).toHaveBeenCalledWith("/signin");

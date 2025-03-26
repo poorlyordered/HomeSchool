@@ -162,12 +162,19 @@
     - Updated progress.md to reflect the completed work
 
 - Planning and implementing Playwright for end-to-end testing:
+
   - Creating a comprehensive implementation plan
   - Setting up the initial Playwright configuration
   - Designing test structure using Page Object Model pattern
   - Planning authentication, guardian, and student flow tests
   - Integrating with existing testing infrastructure
   - Documenting the implementation approach
+
+- Fixed test timeouts across component tests:
+  - Replaced `userEvent` with `fireEvent` for synchronous event handling.
+  - Standardized timer mocking using `jest.useFakeTimers()`.
+  - Removed unnecessary explicit timeouts.
+  - Applied fixes to 11 test files in `src/__tests__/components/`.
 
 ## Next Steps
 
@@ -177,7 +184,7 @@
 
    - Phase 1: Quick Wins
      - ✓ Standardize Mock Implementation
-     - Fix Test Timeouts
+     - ✓ Fix Test Timeouts
      - Optimize Jest Configuration
    - Phase 2: Test Structure Improvements
    - Phase 3: Test Coverage Expansion

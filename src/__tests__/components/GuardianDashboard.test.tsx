@@ -1,5 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { GuardianDashboard } from "../../components/GuardianDashboard";
 import { signOut } from "../../lib/auth";
 import { supabase } from "../../lib/supabase";
@@ -117,15 +116,19 @@ const originalLocation = window.location;
 beforeAll(() => {
   // @ts-expect-error - Intentionally modifying window.location for testing
   delete window.location;
-  window.location = { href: "" } as unknown as Location;
+  // @ts-expect-error - Suppress persistent type error for mock
+  window.location = { href: "" };
 });
 
 afterAll(() => {
+  // @ts-expect-error - Suppress persistent type error for mock restoration
   window.location = originalLocation;
 });
 
 // Skip these tests due to issues with React 18's createRoot API in the test environment
 describe.skip("GuardianDashboard Component", () => {
+  jest.useFakeTimers(); // Add timer mocking
+
   // Mock user data
   const mockUser: User = {
     id: "user-123",
@@ -252,7 +255,7 @@ describe.skip("GuardianDashboard Component", () => {
 
     // Test completing setup
     const completeButton = screen.getByText("Complete Setup");
-    await userEvent.click(completeButton);
+    fireEvent.click(completeButton);
 
     // Verify needsSetup state was updated
     expect(screen.queryByTestId("guardian-setup")).not.toBeInTheDocument();
@@ -308,7 +311,7 @@ describe.skip("GuardianDashboard Component", () => {
     expect(addButton).toBeInTheDocument();
 
     // Test clicking Add Student button
-    await userEvent.click(addButton);
+    fireEvent.click(addButton);
     expect(screen.getByTestId("student-management-modal")).toBeInTheDocument();
   });
 
@@ -416,7 +419,7 @@ describe.skip("GuardianDashboard Component", () => {
     const studentSelector = screen.getByLabelText(/Select Student/i);
 
     // Change the selected student
-    await userEvent.selectOptions(studentSelector, "student-2");
+    fireEvent.change(studentSelector, { target: { value: "student-2" } });
 
     // Check that the second student's information is displayed
     expect(screen.getByText(mockStudents[1].name)).toBeInTheDocument();
@@ -471,14 +474,14 @@ describe.skip("GuardianDashboard Component", () => {
 
     // Click the Manage Students button
     const manageButton = screen.getByText(/Manage Students/i);
-    await userEvent.click(manageButton);
+    fireEvent.click(manageButton);
 
     // Check that the student management modal is displayed
     expect(screen.getByTestId("student-management-modal")).toBeInTheDocument();
 
     // Close the modal
     const closeButton = screen.getByText("Close");
-    await userEvent.click(closeButton);
+    fireEvent.click(closeButton);
 
     // Check that the modal is closed
     expect(
@@ -524,14 +527,14 @@ describe.skip("GuardianDashboard Component", () => {
 
     // Click the Account Settings button
     const settingsButton = screen.getByText(/Account Settings/i);
-    await userEvent.click(settingsButton);
+    fireEvent.click(settingsButton);
 
     // Check that the account settings modal is displayed
     expect(screen.getByTestId("account-settings-modal")).toBeInTheDocument();
 
     // Close the modal
     const closeButton = screen.getByText("Close");
-    await userEvent.click(closeButton);
+    fireEvent.click(closeButton);
 
     // Check that the modal is closed
     expect(
@@ -580,7 +583,7 @@ describe.skip("GuardianDashboard Component", () => {
 
     // Click the Log Out button
     const logoutButton = screen.getByText(/Log Out/i);
-    await userEvent.click(logoutButton);
+    fireEvent.click(logoutButton);
 
     // Check that signOut was called
     expect(signOut).toHaveBeenCalled();
@@ -627,7 +630,7 @@ describe.skip("GuardianDashboard Component", () => {
 
     // Click the Download Transcript button
     const downloadButton = screen.getByText(/Download Official Transcript/i);
-    await userEvent.click(downloadButton);
+    fireEvent.click(downloadButton);
 
     // Check that pdf was called
     expect(pdf).toHaveBeenCalled();
@@ -684,14 +687,14 @@ describe.skip("GuardianDashboard Component", () => {
 
     // Open student management modal
     const manageButton = screen.getByText(/Manage Students/i);
-    await userEvent.click(manageButton);
+    fireEvent.click(manageButton);
 
     // Clear mock counts to track new calls
     jest.clearAllMocks();
 
     // Trigger student update
     const updateButton = screen.getByText("Update Students");
-    await userEvent.click(updateButton);
+    fireEvent.click(updateButton);
 
     // Check that Supabase was queried again to reload students
     expect(supabase.from).toHaveBeenCalledWith("student_guardians");
@@ -739,21 +742,21 @@ describe.skip("GuardianDashboard Component", () => {
 
     // Test course deletion
     const deleteCourseButton = screen.getByText("Delete Course");
-    await userEvent.click(deleteCourseButton);
+    fireEvent.click(deleteCourseButton);
 
     // Test test score deletion
     const deleteScoreButton = screen.getByText("Delete Score");
-    await userEvent.click(deleteScoreButton);
+    fireEvent.click(deleteScoreButton);
 
     // Test course editing (should log to console)
     const consoleSpy = jest.spyOn(console, "log").mockImplementation();
     const editCourseButton = screen.getByText("Edit Course");
-    await userEvent.click(editCourseButton);
+    fireEvent.click(editCourseButton);
     expect(consoleSpy).toHaveBeenCalledWith("Edit course", expect.anything());
 
     // Test test score editing (should log to console)
     const editScoreButton = screen.getByText("Edit Score");
-    await userEvent.click(editScoreButton);
+    fireEvent.click(editScoreButton);
     expect(consoleSpy).toHaveBeenCalledWith("Edit score", expect.anything());
 
     consoleSpy.mockRestore();

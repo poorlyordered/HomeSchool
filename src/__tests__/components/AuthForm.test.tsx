@@ -1,5 +1,4 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { AuthForm } from "../../components/AuthForm";
 import { signIn, signUp, validateInvitation } from "../../lib/auth";
 
@@ -28,6 +27,7 @@ jest.mock("react-router-dom", () => ({
 }));
 
 describe("AuthForm Component", () => {
+  jest.useFakeTimers(); // Add timer mocking
   const mockOnSuccess = jest.fn();
 
   beforeEach(() => {
@@ -60,8 +60,12 @@ describe("AuthForm Component", () => {
       (signIn as jest.Mock).mockResolvedValueOnce({ user: { id: "123" } });
 
       // Fill in the form
-      await userEvent.type(screen.getByLabelText(/email/i), "test@example.com");
-      await userEvent.type(screen.getByLabelText(/password/i), "password123");
+      fireEvent.change(screen.getByLabelText(/email/i), {
+        target: { value: "test@example.com" },
+      });
+      fireEvent.change(screen.getByLabelText(/password/i), {
+        target: { value: "password123" },
+      });
 
       // Submit the form
       fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
@@ -82,8 +86,12 @@ describe("AuthForm Component", () => {
       (signIn as jest.Mock).mockRejectedValueOnce(new Error(errorMessage));
 
       // Fill in the form
-      await userEvent.type(screen.getByLabelText(/email/i), "test@example.com");
-      await userEvent.type(screen.getByLabelText(/password/i), "wrongpassword");
+      fireEvent.change(screen.getByLabelText(/email/i), {
+        target: { value: "test@example.com" },
+      });
+      fireEvent.change(screen.getByLabelText(/password/i), {
+        target: { value: "wrongpassword" },
+      });
 
       // Submit the form
       fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
@@ -119,12 +127,15 @@ describe("AuthForm Component", () => {
       (signUp as jest.Mock).mockResolvedValueOnce({ user: { id: "123" } });
 
       // Fill in the form
-      await userEvent.type(
-        screen.getByLabelText(/email/i),
-        "newuser@example.com",
-      );
-      await userEvent.type(screen.getByLabelText(/password/i), "password123");
-      await userEvent.type(screen.getByLabelText(/name/i), "John Doe");
+      fireEvent.change(screen.getByLabelText(/email/i), {
+        target: { value: "newuser@example.com" },
+      });
+      fireEvent.change(screen.getByLabelText(/password/i), {
+        target: { value: "password123" },
+      });
+      fireEvent.change(screen.getByLabelText(/name/i), {
+        target: { value: "John Doe" },
+      });
 
       // Select role (guardian is default)
       expect(screen.getByLabelText(/guardian/i)).toBeChecked();
@@ -165,12 +176,15 @@ describe("AuthForm Component", () => {
       (signUp as jest.Mock).mockResolvedValueOnce({ user: { id: "123" } });
 
       // Fill in the form
-      await userEvent.type(
-        screen.getByLabelText(/email/i),
-        "student@example.com",
-      );
-      await userEvent.type(screen.getByLabelText(/password/i), "password123");
-      await userEvent.type(screen.getByLabelText(/name/i), "Student Name");
+      fireEvent.change(screen.getByLabelText(/email/i), {
+        target: { value: "student@example.com" },
+      });
+      fireEvent.change(screen.getByLabelText(/password/i), {
+        target: { value: "password123" },
+      });
+      fireEvent.change(screen.getByLabelText(/name/i), {
+        target: { value: "Student Name" },
+      });
 
       // Submit the form
       fireEvent.click(screen.getByRole("button", { name: /sign up/i }));
@@ -192,12 +206,15 @@ describe("AuthForm Component", () => {
       (signUp as jest.Mock).mockRejectedValueOnce(new Error(errorMessage));
 
       // Fill in the form
-      await userEvent.type(
-        screen.getByLabelText(/email/i),
-        "existing@example.com",
-      );
-      await userEvent.type(screen.getByLabelText(/password/i), "password123");
-      await userEvent.type(screen.getByLabelText(/name/i), "Existing User");
+      fireEvent.change(screen.getByLabelText(/email/i), {
+        target: { value: "existing@example.com" },
+      });
+      fireEvent.change(screen.getByLabelText(/password/i), {
+        target: { value: "password123" },
+      });
+      fireEvent.change(screen.getByLabelText(/name/i), {
+        target: { value: "Existing User" },
+      });
 
       // Submit the form
       fireEvent.click(screen.getByRole("button", { name: /sign up/i }));
@@ -293,7 +310,9 @@ describe("AuthForm Component", () => {
       });
 
       // Fill in the form
-      await userEvent.type(screen.getByLabelText(/password/i), "password123");
+      fireEvent.change(screen.getByLabelText(/password/i), {
+        target: { value: "password123" },
+      });
 
       // Submit the form
       fireEvent.click(screen.getByRole("button", { name: /sign in/i }));

@@ -1,5 +1,4 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { AccountSettings } from "../../components/AccountSettings";
 import { supabase } from "../../lib/supabase";
 import { updatePassword, updateEmail, deleteAccount } from "../../lib/auth";
@@ -19,6 +18,8 @@ jest.mock("../../lib/auth", () => ({
 }));
 
 describe("AccountSettings Component", () => {
+  jest.useFakeTimers(); // Add timer mocking
+
   // Mock user data
   const mockUser: User = {
     id: "user-123",
@@ -213,13 +214,11 @@ describe("AccountSettings Component", () => {
 
     // Update name field
     const nameInput = screen.getByLabelText(/name/i) as HTMLInputElement;
-    await userEvent.clear(nameInput);
-    await userEvent.type(nameInput, "Updated Name");
+    fireEvent.change(nameInput, { target: { value: "" } });
+    fireEvent.change(nameInput, { target: { value: "Updated Name" } });
 
     // Submit the form
-    await userEvent.click(
-      screen.getByRole("button", { name: /save changes/i }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
 
     // Check that update was called with correct data
     expect(supabase.from).toHaveBeenCalledWith("profiles");
@@ -252,13 +251,11 @@ describe("AccountSettings Component", () => {
 
     // Update name field
     const nameInput = screen.getByLabelText(/name/i) as HTMLInputElement;
-    await userEvent.clear(nameInput);
-    await userEvent.type(nameInput, "Updated Name");
+    fireEvent.change(nameInput, { target: { value: "" } });
+    fireEvent.change(nameInput, { target: { value: "Updated Name" } });
 
     // Submit the form
-    await userEvent.click(
-      screen.getByRole("button", { name: /save changes/i }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
 
     // Check for error message
     await waitFor(() => {
@@ -293,17 +290,15 @@ describe("AccountSettings Component", () => {
       /school phone/i,
     ) as HTMLInputElement;
 
-    await userEvent.clear(schoolNameInput);
-    await userEvent.type(schoolNameInput, "Updated School");
-    await userEvent.clear(schoolAddressInput);
-    await userEvent.type(schoolAddressInput, "456 New St");
-    await userEvent.clear(schoolPhoneInput);
-    await userEvent.type(schoolPhoneInput, "555-6789");
+    fireEvent.change(schoolNameInput, { target: { value: "" } });
+    fireEvent.change(schoolNameInput, { target: { value: "Updated School" } });
+    fireEvent.change(schoolAddressInput, { target: { value: "" } });
+    fireEvent.change(schoolAddressInput, { target: { value: "456 New St" } });
+    fireEvent.change(schoolPhoneInput, { target: { value: "" } });
+    fireEvent.change(schoolPhoneInput, { target: { value: "555-6789" } });
 
     // Submit the form
-    await userEvent.click(
-      screen.getByRole("button", { name: /save changes/i }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
 
     // Check that update was called with correct data
     expect(supabase.from).toHaveBeenCalledWith("schools");
@@ -347,13 +342,11 @@ describe("AccountSettings Component", () => {
     const schoolNameInput = screen.getByLabelText(
       /school name/i,
     ) as HTMLInputElement;
-    await userEvent.clear(schoolNameInput);
-    await userEvent.type(schoolNameInput, "Updated School");
+    fireEvent.change(schoolNameInput, { target: { value: "" } });
+    fireEvent.change(schoolNameInput, { target: { value: "Updated School" } });
 
     // Submit the form
-    await userEvent.click(
-      screen.getByRole("button", { name: /save changes/i }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
 
     // Check for error message
     await waitFor(() => {
@@ -371,21 +364,18 @@ describe("AccountSettings Component", () => {
     fireEvent.click(screen.getByText("Security"));
 
     // Fill in password fields
-    await userEvent.type(
-      screen.getByLabelText(/current password/i),
-      "currentPassword",
-    );
-    await userEvent.type(
-      screen.getByLabelText(/^new password$/i),
-      "newPassword123",
-    );
-    await userEvent.type(
-      screen.getByLabelText(/confirm new password/i),
-      "newPassword123",
-    );
+    fireEvent.change(screen.getByLabelText(/current password/i), {
+      target: { value: "currentPassword" },
+    });
+    fireEvent.change(screen.getByLabelText(/^new password$/i), {
+      target: { value: "newPassword123" },
+    });
+    fireEvent.change(screen.getByLabelText(/confirm new password/i), {
+      target: { value: "newPassword123" },
+    });
 
     // Submit the form
-    await userEvent.click(screen.getByText("Update Password"));
+    fireEvent.click(screen.getByText("Update Password"));
 
     // Check that updatePassword was called with correct data
     expect(updatePassword).toHaveBeenCalledWith(
@@ -408,21 +398,18 @@ describe("AccountSettings Component", () => {
     fireEvent.click(screen.getByText("Security"));
 
     // Fill in password fields with non-matching passwords
-    await userEvent.type(
-      screen.getByLabelText(/current password/i),
-      "currentPassword",
-    );
-    await userEvent.type(
-      screen.getByLabelText(/^new password$/i),
-      "newPassword123",
-    );
-    await userEvent.type(
-      screen.getByLabelText(/confirm new password/i),
-      "differentPassword",
-    );
+    fireEvent.change(screen.getByLabelText(/current password/i), {
+      target: { value: "currentPassword" },
+    });
+    fireEvent.change(screen.getByLabelText(/^new password$/i), {
+      target: { value: "newPassword123" },
+    });
+    fireEvent.change(screen.getByLabelText(/confirm new password/i), {
+      target: { value: "differentPassword" },
+    });
 
     // Submit the form
-    await userEvent.click(screen.getByText("Update Password"));
+    fireEvent.click(screen.getByText("Update Password"));
 
     // Check that updatePassword was not called
     expect(updatePassword).not.toHaveBeenCalled();
@@ -442,18 +429,18 @@ describe("AccountSettings Component", () => {
     fireEvent.click(screen.getByText("Security"));
 
     // Fill in password fields with short password
-    await userEvent.type(
-      screen.getByLabelText(/current password/i),
-      "currentPassword",
-    );
-    await userEvent.type(screen.getByLabelText(/^new password$/i), "short");
-    await userEvent.type(
-      screen.getByLabelText(/confirm new password/i),
-      "short",
-    );
+    fireEvent.change(screen.getByLabelText(/current password/i), {
+      target: { value: "currentPassword" },
+    });
+    fireEvent.change(screen.getByLabelText(/^new password$/i), {
+      target: { value: "short" },
+    });
+    fireEvent.change(screen.getByLabelText(/confirm new password/i), {
+      target: { value: "short" },
+    });
 
     // Submit the form
-    await userEvent.click(screen.getByText("Update Password"));
+    fireEvent.click(screen.getByText("Update Password"));
 
     // Check that updatePassword was not called
     expect(updatePassword).not.toHaveBeenCalled();
@@ -477,21 +464,18 @@ describe("AccountSettings Component", () => {
     fireEvent.click(screen.getByText("Security"));
 
     // Fill in password fields
-    await userEvent.type(
-      screen.getByLabelText(/current password/i),
-      "wrongPassword",
-    );
-    await userEvent.type(
-      screen.getByLabelText(/^new password$/i),
-      "newPassword123",
-    );
-    await userEvent.type(
-      screen.getByLabelText(/confirm new password/i),
-      "newPassword123",
-    );
+    fireEvent.change(screen.getByLabelText(/current password/i), {
+      target: { value: "wrongPassword" },
+    });
+    fireEvent.change(screen.getByLabelText(/^new password$/i), {
+      target: { value: "newPassword123" },
+    });
+    fireEvent.change(screen.getByLabelText(/confirm new password/i), {
+      target: { value: "newPassword123" },
+    });
 
     // Submit the form
-    await userEvent.click(screen.getByText("Update Password"));
+    fireEvent.click(screen.getByText("Update Password"));
 
     // Check for error message
     await waitFor(() => {
@@ -509,13 +493,12 @@ describe("AccountSettings Component", () => {
     fireEvent.click(screen.getByText("Security"));
 
     // Fill in email field
-    await userEvent.type(
-      screen.getByLabelText(/new email/i),
-      "newemail@example.com",
-    );
+    fireEvent.change(screen.getByLabelText(/new email/i), {
+      target: { value: "newemail@example.com" },
+    });
 
     // Submit the form
-    await userEvent.click(screen.getByText("Send Verification Email"));
+    fireEvent.click(screen.getByText("Send Verification Email"));
 
     // Check that updateEmail was called with correct data
     expect(updateEmail).toHaveBeenCalledWith("newemail@example.com");
@@ -533,10 +516,12 @@ describe("AccountSettings Component", () => {
     fireEvent.click(screen.getByText("Security"));
 
     // Fill in email field with invalid email
-    await userEvent.type(screen.getByLabelText(/new email/i), "invalidemail");
+    fireEvent.change(screen.getByLabelText(/new email/i), {
+      target: { value: "invalidemail" },
+    });
 
     // Submit the form
-    await userEvent.click(screen.getByText("Send Verification Email"));
+    fireEvent.click(screen.getByText("Send Verification Email"));
 
     // Check that updateEmail was not called
     expect(updateEmail).not.toHaveBeenCalled();
@@ -558,13 +543,12 @@ describe("AccountSettings Component", () => {
     fireEvent.click(screen.getByText("Security"));
 
     // Fill in email field
-    await userEvent.type(
-      screen.getByLabelText(/new email/i),
-      "existing@example.com",
-    );
+    fireEvent.change(screen.getByLabelText(/new email/i), {
+      target: { value: "existing@example.com" },
+    });
 
     // Submit the form
-    await userEvent.click(screen.getByText("Send Verification Email"));
+    fireEvent.click(screen.getByText("Send Verification Email"));
 
     // Check for error message
     await waitFor(() => {
@@ -582,9 +566,9 @@ describe("AccountSettings Component", () => {
     fireEvent.click(screen.getByText("Delete Account"));
 
     // Fill in confirmation field
-    await userEvent.type(
+    fireEvent.change(
       screen.getByLabelText(/to confirm, please type your email address/i),
-      mockUser.email,
+      { target: { value: mockUser.email } },
     );
 
     // Submit the form
@@ -596,7 +580,7 @@ describe("AccountSettings Component", () => {
         !button.classList.contains("px-6"),
     );
     if (submitButton) {
-      await userEvent.click(submitButton);
+      fireEvent.click(submitButton);
     } else {
       throw new Error("Delete account button not found");
     }
@@ -612,9 +596,9 @@ describe("AccountSettings Component", () => {
     fireEvent.click(screen.getByText("Delete Account"));
 
     // Fill in confirmation field with wrong email
-    await userEvent.type(
+    fireEvent.change(
       screen.getByLabelText(/to confirm, please type your email address/i),
-      "wrong@example.com",
+      { target: { value: "wrong@example.com" } },
     );
 
     // Check that delete button is disabled
@@ -633,7 +617,7 @@ describe("AccountSettings Component", () => {
 
     // Try to submit the form (should not work due to disabled button)
     if (deleteButton) {
-      await userEvent.click(deleteButton);
+      fireEvent.click(deleteButton);
     }
 
     // Check that deleteAccount was not called
@@ -651,9 +635,9 @@ describe("AccountSettings Component", () => {
     fireEvent.click(screen.getByText("Delete Account"));
 
     // Fill in confirmation field
-    await userEvent.type(
+    fireEvent.change(
       screen.getByLabelText(/to confirm, please type your email address/i),
-      mockUser.email,
+      { target: { value: mockUser.email } },
     );
 
     // Submit the form
@@ -665,7 +649,7 @@ describe("AccountSettings Component", () => {
         !button.classList.contains("px-6"),
     );
     if (submitButton) {
-      await userEvent.click(submitButton);
+      fireEvent.click(submitButton);
     } else {
       throw new Error("Delete account button not found");
     }
@@ -684,7 +668,7 @@ describe("AccountSettings Component", () => {
     const closeButton = screen.getByRole("button", {
       name: "",
     });
-    await userEvent.click(closeButton);
+    fireEvent.click(closeButton);
 
     // Check that onClose was called
     expect(mockOnClose).toHaveBeenCalled();

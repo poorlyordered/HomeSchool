@@ -1,5 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { InvitationAccept } from "../../components/InvitationAccept";
 import { validateInvitation } from "../../lib/auth";
 
@@ -14,7 +13,6 @@ jest.mock("../../lib/auth", () => ({
   validateInvitation: jest.fn(),
   acceptInvitation: jest.fn(),
 }));
-
 
 // Mock token and navigate function
 let mockToken: string | undefined = "mock-token";
@@ -40,8 +38,10 @@ describe("InvitationAccept Component", () => {
 
     // Check for loading state
     expect(screen.getByText("Validating Invitation")).toBeInTheDocument();
-    expect(screen.getByText("Please wait while we validate your invitation...")).toBeInTheDocument();
-    
+    expect(
+      screen.getByText("Please wait while we validate your invitation..."),
+    ).toBeInTheDocument();
+
     // Check for loading spinner
     const loadingSpinner = document.querySelector(".animate-spin");
     expect(loadingSpinner).toBeInTheDocument();
@@ -59,14 +59,16 @@ describe("InvitationAccept Component", () => {
     });
 
     // Check for error message
-    expect(screen.getByText("Invalid invitation link. No token provided.")).toBeInTheDocument();
-    
+    expect(
+      screen.getByText("Invalid invitation link. No token provided."),
+    ).toBeInTheDocument();
+
     // Check for home button
     const homeButton = screen.getByRole("button", { name: "Go to Home" });
     expect(homeButton).toBeInTheDocument();
-    
+
     // Click the home button
-    await userEvent.click(homeButton);
+    fireEvent.click(homeButton);
     expect(mockNavigate).toHaveBeenCalledWith("/");
   });
 
@@ -109,13 +111,15 @@ describe("InvitationAccept Component", () => {
     });
 
     // Check for invitation details
-    expect(screen.getByText(/You have been invited to join/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/You have been invited to join/i),
+    ).toBeInTheDocument();
     expect(screen.getByText(/Student Name's/i)).toBeInTheDocument();
-    
+
     // Find the role text by looking for the specific span
     const roleText = screen.getByText("guardian");
     expect(roleText).toBeInTheDocument();
-    
+
     // Check for sign in and create account buttons
     expect(screen.getByText("Sign In")).toBeInTheDocument();
     expect(screen.getByText("Create Account")).toBeInTheDocument();

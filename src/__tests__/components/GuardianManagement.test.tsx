@@ -1,5 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { GuardianManagement } from "../../components/GuardianManagement";
 import { supabase } from "../../lib/supabase";
 import type { User, Profile, StudentGuardian } from "../../types";
@@ -29,6 +28,8 @@ afterAll(() => {
 });
 
 describe("GuardianManagement Component", () => {
+  jest.useFakeTimers(); // Add timer mocking
+
   // Mock user data
   const mockUser: User = {
     id: "user-123",
@@ -309,7 +310,9 @@ describe("GuardianManagement Component", () => {
 
     // Fill out the form
     const emailInput = screen.getByPlaceholderText("Guardian's email address");
-    await userEvent.type(emailInput, "newguardian@example.com");
+    fireEvent.change(emailInput, {
+      target: { value: "newguardian@example.com" },
+    });
 
     // Manually call onGuardiansChanged to simulate successful guardian addition
     mockOnGuardiansChanged();
@@ -368,11 +371,13 @@ describe("GuardianManagement Component", () => {
 
     // Fill out the form
     const emailInput = screen.getByPlaceholderText("Guardian's email address");
-    await userEvent.type(emailInput, "nonexistent@example.com");
+    fireEvent.change(emailInput, {
+      target: { value: "nonexistent@example.com" },
+    });
 
     // Submit the form
     const addButton = screen.getByText("Add");
-    await userEvent.click(addButton);
+    fireEvent.click(addButton);
 
     // Check for error message - the component shows the specific error message
     await waitFor(() => {
@@ -447,11 +452,11 @@ describe("GuardianManagement Component", () => {
 
     // Fill out the form
     const emailInput = screen.getByPlaceholderText("Guardian's email address");
-    await userEvent.type(emailInput, "guardian@example.com");
+    fireEvent.change(emailInput, { target: { value: "guardian@example.com" } });
 
     // Submit the form
     const addButton = screen.getByText("Add");
-    await userEvent.click(addButton);
+    fireEvent.click(addButton);
 
     // Check for error message - the component might show "Failed to add guardian" instead
     await waitFor(() => {
@@ -512,7 +517,7 @@ describe("GuardianManagement Component", () => {
 
     // Find and click the delete button for the second guardian
     const deleteButtons = screen.getAllByTitle("Remove guardian");
-    await userEvent.click(deleteButtons[0]);
+    fireEvent.click(deleteButtons[0]);
 
     // Check that confirm was called
     expect(window.confirm).toHaveBeenCalledWith(
@@ -567,7 +572,7 @@ describe("GuardianManagement Component", () => {
 
     // Find and click the delete button for the second guardian
     const deleteButtons = screen.getAllByTitle("Remove guardian");
-    await userEvent.click(deleteButtons[0]);
+    fireEvent.click(deleteButtons[0]);
 
     // Check that confirm was called
     expect(window.confirm).toHaveBeenCalledWith(
@@ -640,7 +645,7 @@ describe("GuardianManagement Component", () => {
 
     // Find and click the set primary button for the second guardian
     const setPrimaryButtons = screen.getAllByTitle("Set as primary guardian");
-    await userEvent.click(setPrimaryButtons[0]);
+    fireEvent.click(setPrimaryButtons[0]);
 
     // Check that the update method was called twice
     // First to set all guardians to non-primary, then to set the selected guardian as primary
@@ -669,7 +674,7 @@ describe("GuardianManagement Component", () => {
     );
 
     // Click the close button
-    await userEvent.click(screen.getByText("×"));
+    fireEvent.click(screen.getByText("×"));
 
     // Check that onClose was called
     expect(mockOnClose).toHaveBeenCalled();
@@ -711,7 +716,7 @@ describe("GuardianManagement Component", () => {
 
     // Find and click the invitations tab
     const invitationsTab = screen.getByText("Invitations");
-    await userEvent.click(invitationsTab);
+    fireEvent.click(invitationsTab);
 
     // Check that the invitations tab is active
     expect(invitationsTab.closest("button")).toHaveClass("border-blue-500");

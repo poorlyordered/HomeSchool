@@ -1,5 +1,4 @@
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { TestScores } from "../../components/TestScores";
 import type { TestScore } from "../../types";
 
@@ -26,6 +25,8 @@ afterAll(() => {
 });
 
 describe("TestScores Component", () => {
+  jest.useFakeTimers(); // Add timer mocking
+
   // Mock props
   const mockStudentId = "student-123";
   const mockOnEditScore = jest.fn();
@@ -145,7 +146,7 @@ describe("TestScores Component", () => {
 
     // Click the Add Score button
     const addButton = screen.getByText("Add Score");
-    await userEvent.click(addButton);
+    fireEvent.click(addButton);
 
     // Check that the TestScoreManagement modal is displayed
     expect(screen.getByTestId("test-score-management")).toBeInTheDocument();
@@ -163,14 +164,14 @@ describe("TestScores Component", () => {
 
     // Open the modal
     const addButton = screen.getByText("Add Score");
-    await userEvent.click(addButton);
+    fireEvent.click(addButton);
 
     // Check that the modal is displayed
     expect(screen.getByTestId("test-score-management")).toBeInTheDocument();
 
     // Close the modal
     const closeButton = screen.getByText("Close");
-    await userEvent.click(closeButton);
+    fireEvent.click(closeButton);
 
     // Check that the modal is closed
     expect(
@@ -190,11 +191,11 @@ describe("TestScores Component", () => {
 
     // Open the modal
     const addButton = screen.getByText("Add Score");
-    await userEvent.click(addButton);
+    fireEvent.click(addButton);
 
     // Add a score
     const addScoreButton = screen.getByText("Add Score");
-    await userEvent.click(addScoreButton);
+    fireEvent.click(addScoreButton);
 
     // Check that the event was dispatched
     expect(mockDispatchEvent).toHaveBeenCalledWith(
@@ -227,7 +228,7 @@ describe("TestScores Component", () => {
     );
 
     if (firstEditButton) {
-      await userEvent.click(firstEditButton);
+      fireEvent.click(firstEditButton);
     } else {
       throw new Error("Edit button not found");
     }
@@ -254,7 +255,7 @@ describe("TestScores Component", () => {
     );
 
     if (firstDeleteButton) {
-      await userEvent.click(firstDeleteButton);
+      fireEvent.click(firstDeleteButton);
     } else {
       throw new Error("Delete button not found");
     }

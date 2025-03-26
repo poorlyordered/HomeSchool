@@ -1,5 +1,4 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { TestScoreManagement } from "../../components/TestScoreManagement";
 import { supabase } from "../../lib/supabase";
 import {
@@ -15,6 +14,8 @@ jest.mock("../../lib/errorHandling", () => ({
 }));
 
 describe("TestScoreManagement Component", () => {
+  jest.useFakeTimers(); // Add timer mocking
+
   // Mock props
   const mockStudentId = "student-123";
   const mockOnClose = jest.fn();
@@ -107,7 +108,7 @@ describe("TestScoreManagement Component", () => {
 
     // Change test type to ACT
     const testTypeSelect = screen.getByLabelText("Test Type");
-    await userEvent.selectOptions(testTypeSelect, "ACT");
+    fireEvent.change(testTypeSelect, { target: { value: "ACT" } });
 
     // Check that ACT sections are now displayed
     expect(screen.getByDisplayValue("English")).toBeInTheDocument();
@@ -127,16 +128,16 @@ describe("TestScoreManagement Component", () => {
 
     // Fill in test date
     const dateInput = screen.getByLabelText("Test Date");
-    await userEvent.type(dateInput, "2025-03-15");
+    fireEvent.change(dateInput, { target: { value: "2025-03-15" } });
 
     // Enter invalid score for SAT Math (above max 800)
     const scoreInputs = screen.getAllByRole("spinbutton");
-    await userEvent.clear(scoreInputs[0]);
-    await userEvent.type(scoreInputs[0], "900");
+    fireEvent.change(scoreInputs[0], { target: { value: "" } });
+    fireEvent.change(scoreInputs[0], { target: { value: "900" } });
 
     // Submit the form
     const saveButton = screen.getByRole("button", { name: "Save Test Score" });
-    await userEvent.click(saveButton);
+    fireEvent.click(saveButton);
 
     // Check for validation error
     await waitFor(() => {
@@ -149,15 +150,15 @@ describe("TestScoreManagement Component", () => {
 
     // Change to ACT
     const testTypeSelect = screen.getByLabelText("Test Type");
-    await userEvent.selectOptions(testTypeSelect, "ACT");
+    fireEvent.change(testTypeSelect, { target: { value: "ACT" } });
 
     // Enter invalid score for ACT English (above max 36)
     const actScoreInputs = screen.getAllByRole("spinbutton");
-    await userEvent.clear(actScoreInputs[0]);
-    await userEvent.type(actScoreInputs[0], "40");
+    fireEvent.change(actScoreInputs[0], { target: { value: "" } });
+    fireEvent.change(actScoreInputs[0], { target: { value: "40" } });
 
     // Submit the form
-    await userEvent.click(saveButton);
+    fireEvent.click(saveButton);
 
     // Check for validation error
     await waitFor(() => {
@@ -180,18 +181,18 @@ describe("TestScoreManagement Component", () => {
 
     // Fill in test date
     const dateInput = screen.getByLabelText("Test Date");
-    await userEvent.type(dateInput, "2025-03-15");
+    fireEvent.change(dateInput, { target: { value: "2025-03-15" } });
 
     // Enter valid scores for SAT
     const scoreInputs = screen.getAllByRole("spinbutton");
-    await userEvent.clear(scoreInputs[0]);
-    await userEvent.type(scoreInputs[0], "700");
-    await userEvent.clear(scoreInputs[1]);
-    await userEvent.type(scoreInputs[1], "700");
+    fireEvent.change(scoreInputs[0], { target: { value: "" } });
+    fireEvent.change(scoreInputs[0], { target: { value: "700" } });
+    fireEvent.change(scoreInputs[1], { target: { value: "" } });
+    fireEvent.change(scoreInputs[1], { target: { value: "700" } });
 
     // Submit the form
     const saveButton = screen.getByRole("button", { name: "Save Test Score" });
-    await userEvent.click(saveButton);
+    fireEvent.click(saveButton);
 
     // Check that Supabase was called with correct data
     expect(supabase.from).toHaveBeenCalledWith("test_scores");
@@ -242,18 +243,18 @@ describe("TestScoreManagement Component", () => {
 
     // Fill in test date
     const dateInput = screen.getByLabelText("Test Date");
-    await userEvent.type(dateInput, "2025-03-15");
+    fireEvent.change(dateInput, { target: { value: "2025-03-15" } });
 
     // Enter valid scores for SAT
     const scoreInputs = screen.getAllByRole("spinbutton");
-    await userEvent.clear(scoreInputs[0]);
-    await userEvent.type(scoreInputs[0], "700");
-    await userEvent.clear(scoreInputs[1]);
-    await userEvent.type(scoreInputs[1], "700");
+    fireEvent.change(scoreInputs[0], { target: { value: "" } });
+    fireEvent.change(scoreInputs[0], { target: { value: "700" } });
+    fireEvent.change(scoreInputs[1], { target: { value: "" } });
+    fireEvent.change(scoreInputs[1], { target: { value: "700" } });
 
     // Submit the form
     const saveButton = screen.getByRole("button", { name: "Save Test Score" });
-    await userEvent.click(saveButton);
+    fireEvent.click(saveButton);
 
     // Check for error message
     await waitFor(() => {
@@ -298,18 +299,18 @@ describe("TestScoreManagement Component", () => {
 
     // Fill in test date
     const dateInput = screen.getByLabelText("Test Date");
-    await userEvent.type(dateInput, "2025-03-15");
+    fireEvent.change(dateInput, { target: { value: "2025-03-15" } });
 
     // Enter valid scores for SAT
     const scoreInputs = screen.getAllByRole("spinbutton");
-    await userEvent.clear(scoreInputs[0]);
-    await userEvent.type(scoreInputs[0], "700");
-    await userEvent.clear(scoreInputs[1]);
-    await userEvent.type(scoreInputs[1], "700");
+    fireEvent.change(scoreInputs[0], { target: { value: "" } });
+    fireEvent.change(scoreInputs[0], { target: { value: "700" } });
+    fireEvent.change(scoreInputs[1], { target: { value: "" } });
+    fireEvent.change(scoreInputs[1], { target: { value: "700" } });
 
     // Submit the form
     const saveButton = screen.getByRole("button", { name: "Save Test Score" });
-    await userEvent.click(saveButton);
+    fireEvent.click(saveButton);
 
     // Check for error message
     await waitFor(() => {
@@ -342,7 +343,7 @@ describe("TestScoreManagement Component", () => {
 
     // Click the Cancel button
     const cancelButton = screen.getByRole("button", { name: "Cancel" });
-    await userEvent.click(cancelButton);
+    fireEvent.click(cancelButton);
 
     // Check that onClose was called
     expect(mockOnClose).toHaveBeenCalled();
@@ -359,7 +360,7 @@ describe("TestScoreManagement Component", () => {
 
     // Click the close button
     const closeButton = screen.getByRole("button", { name: "×" });
-    await userEvent.click(closeButton);
+    fireEvent.click(closeButton);
 
     // Check that onClose was called
     expect(mockOnClose).toHaveBeenCalled();
