@@ -1,12 +1,30 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AuthForm } from "../../components/AuthForm";
-import { signIn, signUp } from "../../lib/auth";
+import { signIn, signUp, validateInvitation } from "../../lib/auth";
+
+// Mock invitation token for tests that need it
+let mockInvitationToken: string | null = null;
 
 // Mock the auth functions
 jest.mock("../../lib/auth", () => ({
   signIn: jest.fn(),
   signUp: jest.fn(),
+  validateInvitation: jest.fn(),
+}));
+
+// Mock react-router-dom
+jest.mock("react-router-dom", () => ({
+  useSearchParams: jest.fn(() => [
+    {
+      get: jest.fn((param) => {
+        if (param === "invitation" && mockInvitationToken) {
+          return mockInvitationToken;
+        }
+        return null;
+      }),
+    },
+  ]),
 }));
 
 describe("AuthForm Component", () => {
@@ -14,6 +32,9 @@ describe("AuthForm Component", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockInvitationToken = null;
+    // Reset window.location.href
+    window.location.href = "";
   });
 
   describe("Sign In Mode", () => {
@@ -186,6 +207,107 @@ describe("AuthForm Component", () => {
         expect(screen.getByText(errorMessage)).toBeInTheDocument();
         expect(mockOnSuccess).not.toHaveBeenCalled();
       });
+    });
+  });
+
+  describe("With Invitation Token", () => {
+    beforeEach(() => {
+      mockInvitationToken = "mock-invitation-token";
+    });
+
+    it("validates invitation token on load", async () => {
+      // Mock successful invitation validation
+      (validateInvitation as jest.Mock).mockResolvedValueOnce({
+        valid: true,
+        invitation: {
+          email: "invited@example.com",
+          role: "guardian",
+        },
+      });
+
+      render(<AuthForm mode="signin" onSuccess={mockOnSuccess} />);
+
+      // Check for loading state
+      expect(screen.getByText("Validating invitation...")).toBeInTheDocument();
+
+      // Wait for validation to complete
+      await waitFor(() => {
+        expect(
+          screen.queryByText("Validating invitation..."),
+        ).not.toBeInTheDocument();
+      });
+
+      // Check that the invitation details are displayed
+      expect(
+        screen.getByText(/You've been invited to join as a/i),
+      ).toBeInTheDocument();
+      expect(screen.getByText(/guardian/i)).toBeInTheDocument();
+      expect(screen.getByText(/invited@example.com/i)).toBeInTheDocument();
+
+      // Check that the email field is pre-filled
+      expect(screen.getByLabelText(/email/i)).toHaveValue(
+        "invited@example.com",
+      );
+    });
+
+    it("handles invalid invitation token", async () => {
+      // Mock invalid invitation validation
+      (validateInvitation as jest.Mock).mockResolvedValueOnce({
+        valid: false,
+        message: "Invalid invitation token",
+      });
+
+      render(<AuthForm mode="signin" onSuccess={mockOnSuccess} />);
+
+      // Wait for validation to complete
+      await waitFor(() => {
+        expect(
+          screen.queryByText("Validating invitation..."),
+        ).not.toBeInTheDocument();
+      });
+
+      // Check that the error message is displayed
+      expect(screen.getByText("Invalid invitation token")).toBeInTheDocument();
+    });
+
+    it("handles sign in with invitation token", async () => {
+      // Mock successful invitation validation
+      (validateInvitation as jest.Mock).mockResolvedValueOnce({
+        valid: true,
+        invitation: {
+          email: "invited@example.com",
+          role: "guardian",
+        },
+      });
+
+      // Mock successful sign in
+      (signIn as jest.Mock).mockResolvedValueOnce({ user: { id: "123" } });
+
+      render(<AuthForm mode="signin" onSuccess={mockOnSuccess} />);
+
+      // Wait for validation to complete
+      await waitFor(() => {
+        expect(
+          screen.queryByText("Validating invitation..."),
+        ).not.toBeInTheDocument();
+      });
+
+      // Fill in the form
+      await userEvent.type(screen.getByLabelText(/password/i), "password123");
+
+      // Submit the form
+      fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
+
+      // Wait for the sign in process to complete
+      await waitFor(() => {
+        expect(signIn).toHaveBeenCalledWith(
+          "invited@example.com",
+          "password123",
+        );
+      });
+
+      // Verify that onSuccess was not called, which indicates redirection happened
+      expect(mockOnSuccess).not.toHaveBeenCalled();
     });
   });
 });

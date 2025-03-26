@@ -69,6 +69,7 @@
   - `validateForm`: Standardized form validation with error reporting
 
 - Error handling patterns:
+
   - Try/catch blocks for async operations
   - Context parameter for tracking error sources
   - Detailed error logging to console in development mode
@@ -76,6 +77,20 @@
   - Verification of database operation success
   - React useCallback for memoizing functions that trigger API calls
   - Proper dependency management in useEffect hooks
+
+- Troubleshooting workflow:
+  - When encountering errors, follow the confidence check process:
+    - [CONFIDENCE CHECK]
+      - Rate confidence (0-10)
+      - If < 9, explain:
+        - What you know
+        - What you're unsure about
+        - What you need to investigate
+      - Only proceed when confidence ≥ 9
+      - Document findings for future memory resets
+  - This ensures methodical problem-solving and prevents making changes without sufficient understanding
+  - Helps maintain system stability by avoiding speculative fixes
+  - Creates documentation trail for recurring issues
 
 ## Testing Patterns
 

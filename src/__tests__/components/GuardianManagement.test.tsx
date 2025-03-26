@@ -11,6 +11,13 @@ jest.mock("../../lib/supabase", () => ({
   },
 }));
 
+// Mock InvitationManagement component
+jest.mock("../../components/InvitationManagement", () => ({
+  InvitationManagement: jest.fn(() => (
+    <div data-testid="invitation-management">Invitation Management Mock</div>
+  )),
+}));
+
 // Mock window.confirm
 const originalConfirm = window.confirm;
 beforeAll(() => {
@@ -157,9 +164,12 @@ describe("GuardianManagement Component", () => {
 
     // Check for loading state
     expect(
-      screen.getByText(`Manage Guardians for ${mockStudentName}`),
+      screen.getByText(`Manage Access for ${mockStudentName}`),
     ).toBeInTheDocument();
-    expect(screen.getByText("Current Guardians")).toBeInTheDocument();
+    // Use a more specific query to target the heading element
+    expect(
+      screen.getByRole("heading", { name: "Current Guardians" }),
+    ).toBeInTheDocument();
 
     // Check for loading spinner
     const loadingSpinner = document.querySelector(".animate-spin");
@@ -665,6 +675,51 @@ describe("GuardianManagement Component", () => {
     expect(mockOnClose).toHaveBeenCalled();
   });
 
+  it("switches to invitations tab when clicked", async () => {
+    // Mock successful guardian loading
+    (supabase.from as jest.Mock).mockImplementation((table) => {
+      if (table === "student_guardians") {
+        return {
+          select: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              data: mockStudentGuardians,
+              error: null,
+            }),
+          }),
+        };
+      }
+      return {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+      };
+    });
+
+    render(
+      <GuardianManagement
+        user={mockUser}
+        studentId={mockStudentId}
+        studentName={mockStudentName}
+        onClose={mockOnClose}
+        onGuardiansChanged={mockOnGuardiansChanged}
+      />,
+    );
+
+    // Wait for guardians to load
+    await waitFor(() => {
+      expect(screen.getByText("Primary Guardian")).toBeInTheDocument();
+    });
+
+    // Find and click the invitations tab
+    const invitationsTab = screen.getByText("Invitations");
+    await userEvent.click(invitationsTab);
+
+    // Check that the invitations tab is active
+    expect(invitationsTab.closest("button")).toHaveClass("border-blue-500");
+
+    // Check that the InvitationManagement component is rendered
+    expect(screen.getByTestId("invitation-management")).toBeInTheDocument();
+  });
+
   it("handles error when loading guardians fails", async () => {
     // Mock error when loading guardians
     (supabase.from as jest.Mock).mockImplementation((table) => {
@@ -698,5 +753,50 @@ describe("GuardianManagement Component", () => {
     await waitFor(() => {
       expect(screen.getByText("Failed to load guardians")).toBeInTheDocument();
     });
+  });
+
+  it("renders both tabs correctly", async () => {
+    // Mock successful guardian loading
+    (supabase.from as jest.Mock).mockImplementation((table) => {
+      if (table === "student_guardians") {
+        return {
+          select: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              data: mockStudentGuardians,
+              error: null,
+            }),
+          }),
+        };
+      }
+      return {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+      };
+    });
+
+    render(
+      <GuardianManagement
+        user={mockUser}
+        studentId={mockStudentId}
+        studentName={mockStudentName}
+        onClose={mockOnClose}
+        onGuardiansChanged={mockOnGuardiansChanged}
+      />,
+    );
+
+    // Check that both tabs are rendered
+    const tabButtons = screen.getAllByRole("button");
+    const guardiansTab = tabButtons.find((button) =>
+      button.textContent?.includes("Current Guardians"),
+    );
+    const invitationsTab = tabButtons.find((button) =>
+      button.textContent?.includes("Invitations"),
+    );
+
+    expect(guardiansTab).toBeInTheDocument();
+    expect(invitationsTab).toBeInTheDocument();
+
+    // By default, the guardians tab should be active
+    expect(guardiansTab).toHaveClass("border-blue-500");
   });
 });

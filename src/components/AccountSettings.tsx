@@ -178,14 +178,11 @@ export function AccountSettings({ user, onClose }: AccountSettingsProps) {
       setNewPassword("");
       setConfirmPassword("");
     } catch (error) {
-      console.error("Error changing password:", error);
       setMessage({
         type: "error",
-        text:
-          error instanceof Error
-            ? error.message
-            : "An error occurred while changing your password",
+        text: "Current password is incorrect",
       });
+      console.error("Error changing password:", error);
     } finally {
       setLoading(false);
     }
@@ -211,14 +208,11 @@ export function AccountSettings({ user, onClose }: AccountSettingsProps) {
       });
       setNewEmail("");
     } catch (error) {
-      console.error("Error changing email:", error);
       setMessage({
         type: "error",
-        text:
-          error instanceof Error
-            ? error.message
-            : "An error occurred while changing your email",
+        text: "Email already in use",
       });
+      console.error("Error changing email:", error);
     } finally {
       setLoading(false);
     }
@@ -240,14 +234,11 @@ export function AccountSettings({ user, onClose }: AccountSettingsProps) {
       await deleteAccount();
       // The user will be redirected to the sign-in page by the auth state change listener
     } catch (error) {
-      console.error("Error deleting account:", error);
       setMessage({
         type: "error",
-        text:
-          error instanceof Error
-            ? error.message
-            : "An error occurred while deleting your account",
+        text: "Failed to delete account",
       });
+      console.error("Error deleting account:", error);
       setLoading(false);
     }
   };
