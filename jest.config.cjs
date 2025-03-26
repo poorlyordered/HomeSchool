@@ -4,7 +4,8 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.cjs'],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-    '^@/(.*)$': '<rootDir>/src/$1'
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^src/lib/supabase$': '<rootDir>/src/lib/__mocks__/supabase.ts'
   },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

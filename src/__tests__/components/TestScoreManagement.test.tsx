@@ -2,18 +2,13 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TestScoreManagement } from "../../components/TestScoreManagement";
 import { supabase } from "../../lib/supabase";
+import {
+  resetSupabaseMocks,
+  mockTableData,
+  mockTableError,
+} from "../helpers/supabaseTestHelpers";
 
-// Mock dependencies
-jest.mock("../../lib/supabase", () => ({
-  supabase: {
-    from: jest.fn().mockReturnThis(),
-    insert: jest.fn().mockReturnThis(),
-    select: jest.fn().mockReturnThis(),
-    single: jest.fn().mockReturnThis(),
-    delete: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-  },
-}));
+// No need to mock supabase directly - it's automatically mocked via jest.config.cjs
 
 jest.mock("../../lib/errorHandling", () => ({
   handleAndDisplayError: jest.fn(),
@@ -27,30 +22,26 @@ describe("TestScoreManagement Component", () => {
 
   // Mock Supabase responses
   const mockTestScoreInsertResponse = {
-    data: {
-      id: "test-score-123",
-      student_id: mockStudentId,
-      type: "SAT",
-      date: "2025-03-15",
-      total_score: 1400,
-    },
-    error: null,
-  };
-
-  const mockTestSectionsInsertResponse = {
-    data: null,
-    error: null,
+    id: "test-score-123",
+    student_id: mockStudentId,
+    type: "SAT",
+    date: "2025-03-15",
+    total_score: 1400,
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    resetSupabaseMocks();
 
-    // Setup default mock behavior for Supabase
-    (supabase.from as jest.Mock).mockImplementation((table) => {
+    // Setup default mock behavior for test scores
+    (supabase.from as jest.Mock).mockImplementation((table: string) => {
       if (table === "test_scores") {
         return {
           insert: jest.fn().mockReturnValue({
-            select: jest.fn().mockResolvedValue(mockTestScoreInsertResponse),
+            select: jest.fn().mockResolvedValue({
+              data: mockTestScoreInsertResponse,
+              error: null,
+            }),
           }),
           delete: jest.fn().mockReturnValue({
             eq: jest.fn().mockResolvedValue({ error: null }),
@@ -58,18 +49,13 @@ describe("TestScoreManagement Component", () => {
         };
       } else if (table === "test_sections") {
         return {
-          insert: jest.fn().mockResolvedValue(mockTestSectionsInsertResponse),
+          insert: jest.fn().mockResolvedValue({ data: null, error: null }),
           delete: jest.fn().mockReturnValue({
             eq: jest.fn().mockResolvedValue({ error: null }),
           }),
         };
       }
-      return {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        delete: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-      };
+      return supabase;
     });
   });
 
@@ -241,22 +227,9 @@ describe("TestScoreManagement Component", () => {
   });
 
   it("handles error during test score insertion", async () => {
-    // Mock test score insertion error
-    (supabase.from as jest.Mock).mockImplementation((table) => {
-      if (table === "test_scores") {
-        return {
-          insert: jest.fn().mockReturnValue({
-            select: jest.fn().mockResolvedValue({
-              data: null,
-              error: new Error("Failed to insert test score"),
-            }),
-          }),
-        };
-      }
-      return {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-      };
+    // Mock test score insertion error using our helper
+    mockTableError("test_scores", {
+      message: "Failed to insert test score",
     });
 
     render(
@@ -295,31 +268,24 @@ describe("TestScoreManagement Component", () => {
   });
 
   it("handles error during test sections insertion", async () => {
-    // Mock test sections insertion error
-    (supabase.from as jest.Mock).mockImplementation((table) => {
+    // Setup successful test score insertion using our helper
+    mockTableData("test_scores", mockTestScoreInsertResponse);
+
+    // Setup test sections insertion error
+    mockTableError("test_sections", {
+      message: "Failed to insert test sections",
+    });
+
+    // Setup delete functionality for cleanup
+    (supabase.from as jest.Mock).mockImplementation((table: string) => {
       if (table === "test_scores") {
         return {
-          insert: jest.fn().mockReturnValue({
-            select: jest.fn().mockResolvedValue(mockTestScoreInsertResponse),
-          }),
           delete: jest.fn().mockReturnValue({
             eq: jest.fn().mockResolvedValue({ error: null }),
           }),
         };
-      } else if (table === "test_sections") {
-        return {
-          insert: jest.fn().mockResolvedValue({
-            data: null,
-            error: new Error("Failed to insert test sections"),
-          }),
-        };
       }
-      return {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        delete: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-      };
+      return supabase;
     });
 
     render(
