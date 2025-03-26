@@ -159,17 +159,22 @@ The improvements will be implemented in the following phases, using our energy/f
 
    - Create a `__mocks__/supabase.ts` file with standardized mock implementations
    - Update existing tests to use the standardized mocks
+   - Create helper functions in `src/__tests__/helpers/supabaseTestHelpers.ts`
+   - Configure Jest to automatically mock Supabase
 
 2. **Fix Test Timeouts:**
 
    - Apply the successful fixes from BUG-003 to other test files
-   - Replace `userEvent` with `fireEvent` where appropriate
-   - Implement proper timer mocking
+   - Replace `userEvent` with `fireEvent` for synchronous event handling
+   - Implement proper timer mocking with `jest.useFakeTimers()`
+   - Remove unnecessary explicit timeouts
+   - Apply fixes to all component test files
 
 3. **Optimize Jest Configuration:**
    - Update jest.config.cjs with performance optimizations
-   - Add maxWorkers configuration
-   - Enable test caching
+   - Add `maxWorkers: '50%'` to limit parallel execution to half of available CPU cores
+   - Enable test caching with `cache: true` for faster subsequent test runs
+   - Verify configuration with `--showConfig` flag
 
 ### Phase 2: Test Structure Improvements (Sprint)
 
@@ -226,7 +231,7 @@ By implementing these improvements, we expect to achieve:
 | ----- | ------------------------------------- | ----------- | -------------- | ------------------------------------------------------ |
 | 1     | Standardize Mock Implementation       | Completed   | 2025-03-26     | See activeContext.md                                   |
 | 1     | Fix Test Timeouts                     | Completed   | 2025-03-26     | Replaced userEvent with fireEvent, standardized timers |
-| 1     | Optimize Jest Configuration           | Not Started |                |                                                        |
+| 1     | Optimize Jest Configuration           | Completed   | 2025-03-26     | Added cache:true and maxWorkers:'50%' to Jest config   |
 | 2     | Implement Co-location Pattern         | Not Started |                |                                                        |
 | 2     | Standardize Test Structure            | Not Started |                |                                                        |
 | 2     | Enhance Mock Stability                | Not Started |                |                                                        |
