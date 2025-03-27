@@ -108,3 +108,12 @@ export interface Invitation {
   student?: StudentInfo;
   inviter?: Profile;
 }
+
+export interface SchoolGuardian {
+  id: string;
+  school_id: string;
+  guardian_id?: string;
+  email: string;
+  is_registered: boolean;
+  created_at: string;
+}

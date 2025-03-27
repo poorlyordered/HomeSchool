@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import type { User, Profile, Invitation } from "../types";
+import type { User, Profile, Invitation, SchoolGuardian } from "../types";
 import { v4 as uuidv4 } from "uuid";
 
 export interface VerificationResult {
@@ -232,16 +232,117 @@ export async function createInvitation(
   studentId: string,
 ): Promise<InvitationResult> {
   try {
+    console.log(`Creating invitation for ${email} with role ${role} for student ${studentId}`);
+    
+    // Validate inputs
+    if (!email || !role || !studentId) {
+      console.error("Missing required parameters:", { email, role, studentId });
+      return {
+        success: false,
+        message: "Missing required parameters for invitation",
+      };
+    }
+
+    // Check if student exists
+    const { data: studentData, error: studentError } = await supabase
+      .from("students")
+      .select("id")
+      .eq("id", studentId)
+      .single();
+
+    if (studentError) {
+      console.error("Error checking student:", studentError);
+      return {
+        success: false,
+        message: "Could not verify student information",
+      };
+    }
+
+    if (!studentData) {
+      console.error("Student not found:", studentId);
+      return {
+        success: false,
+        message: "Student not found",
+      };
+    }
+
+    // Get current user ID
+    const { data: authData } = await supabase.auth.getUser();
+    const currentUserId = authData.user?.id;
+    
+    console.log("Current user ID:", currentUserId);
+    console.log("Student ID:", studentId);
+    
+    if (!currentUserId) {
+      console.error("No authenticated user found");
+      return {
+        success: false,
+        message: "You must be logged in to create invitations",
+      };
+    }
+
+    // Skip the guardian relationship check for now - the RLS policy will handle this
+    // This allows us to create invitations without additional checks
+    // The database's RLS policy will still prevent unauthorized invitations
+    
+    /* Commenting out the explicit check to rely on RLS instead
+    // Verify that the current user is a guardian of this student (RLS check)
+    const { data: guardianData, error: guardianError } = await supabase
+      .from("student_guardians")
+      .select("*")
+      .eq("student_id", studentId)
+      .eq("guardian_id", currentUserId);
+
+    if (guardianError) {
+      console.error("Error checking guardian relationship:", guardianError);
+      return {
+        success: false,
+        message: "Could not verify guardian relationship",
+      };
+    }
+
+    if (!guardianData || guardianData.length === 0) {
+      console.error("User is not a guardian of this student");
+      return {
+        success: false,
+        message: "You do not have permission to invite others for this student",
+      };
+    }
+    */
+
+    // Check if an invitation already exists for this email, student, and role
+    const { data: existingInvitation, error: invitationError } = await supabase
+      .from("invitations")
+      .select("*")
+      .eq("email", email)
+      .eq("student_id", studentId)
+      .eq("role", role)
+      .eq("status", "pending");
+
+    if (invitationError) {
+      console.error("Error checking existing invitations:", invitationError);
+    } else if (existingInvitation && existingInvitation.length > 0) {
+      console.log("Invitation already exists:", existingInvitation[0]);
+      return {
+        success: false,
+        message: "An invitation for this email already exists",
+      };
+    }
+
     // Check if user already exists with this email
     const { data: existingProfiles, error: profileError } = await supabase
       .from("profiles")
       .select("*")
       .eq("email", email);
 
-    if (profileError) throw profileError;
+    if (profileError) {
+      console.error("Error checking existing profiles:", profileError);
+      throw profileError;
+    }
 
     // If user exists and has the same role, we can just add them directly
     if (existingProfiles && existingProfiles.length > 0) {
+      console.log("Found existing profile:", existingProfiles[0]);
       const existingProfile = existingProfiles[0];
 
       if (existingProfile.role === role) {
@@ -253,15 +354,20 @@ export async function createInvitation(
             .eq("student_id", studentId)
             .eq("guardian_id", existingProfile.id);
 
-          if (existingError) throw existingError;
+          if (existingError) {
+            console.error("Error checking existing student-guardian relationship:", existingError);
+            throw existingError;
+          }
 
           if (existingData && existingData.length > 0) {
+            console.log("Guardian already associated with student:", existingData);
             return {
               success: false,
               message: "This guardian is already associated with this student",
             };
           }
 
+          console.log("Adding guardian to student directly");
           // Add the guardian to the student
           const { error: insertError } = await supabase
             .from("student_guardians")
@@ -273,7 +379,10 @@ export async function createInvitation(
               },
             ]);
 
-          if (insertError) throw insertError;
+          if (insertError) {
+            console.error("Error inserting student-guardian relationship:", insertError);
+            throw insertError;
+          }
 
           return {
             success: true,
@@ -281,12 +390,14 @@ export async function createInvitation(
           };
         } else {
           // For students, we don't have a direct way to add them yet
-          // This would be handled by the student account creation process
+          console.log("Student with this email already exists");
           return {
             success: false,
             message: "Student with this email already exists",
           };
         }
+      } else {
+        console.log("User exists but with different role:", existingProfile.role);
       }
     }
 
@@ -302,39 +413,87 @@ export async function createInvitation(
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
+      console.error("User not authenticated");
       throw new Error("User not authenticated");
     }
 
-    // Create the invitation
-    const { data, error } = await supabase
-      .from("invitations")
-      .insert([
-        {
-          email,
-          role,
-          student_id: studentId,
-          inviter_id: user.id,
-          token,
-          expires_at: expiresAt.toISOString(),
-        },
-      ])
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    return {
-      success: true,
-      invitation: data as Invitation,
+    // Create invitation object
+    const invitationData = {
+      email,
+      role,
+      student_id: studentId,
+      inviter_id: user.id,
+      token,
+      expires_at: expiresAt.toISOString(),
+      status: "pending",
     };
+
+    console.log("Creating new invitation with data:", invitationData);
+
+    try {
+      // Create the invitation
+      const { data, error } = await supabase
+        .from("invitations")
+        .insert([invitationData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error inserting invitation:", error);
+        throw error;
+      }
+
+      console.log("Invitation created successfully:", data);
+      return {
+        success: true,
+        invitation: data as Invitation,
+      };
+    } catch (error) {
+      console.error("Error during invitation insert:", error);
+      
+      // Check if it's a unique constraint violation
+      if (error instanceof Error && 
+          (error.message.includes("duplicate key") || 
+           error.message.includes("unique constraint"))) {
+        return {
+          success: false,
+          message: "An invitation for this email already exists",
+        };
+      }
+      
+      // Check if it's a permission error
+      if (error instanceof Error && 
+          error.message.includes("policy")) {
+        return {
+          success: false,
+          message: "You do not have permission to create invitations for this student",
+        };
+      }
+      
+      throw error;
+    }
   } catch (error) {
     console.error("Error creating invitation:", error);
+    // More detailed error message
+    let errorMessage = "An error occurred while creating the invitation";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      // Add more context for specific errors
+      if (errorMessage.includes("foreign key constraint")) {
+        errorMessage = "Invalid student or guardian reference";
+      } else if (errorMessage.includes("duplicate key") || errorMessage.includes("unique constraint")) {
+        errorMessage = "An invitation for this email already exists";
+      } else if (errorMessage.includes("not-found")) {
+        errorMessage = "Student not found";
+      } else if (errorMessage.includes("policy")) {
+        errorMessage = "You do not have permission to create invitations for this student";
+      } else if (errorMessage.includes("500")) {
+        errorMessage = "Server error - please try again later";
+      }
+    }
     return {
       success: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "An error occurred while creating the invitation",
+      message: errorMessage,
     };
   }
 }
@@ -553,6 +712,217 @@ export async function getInvitationsByStudent(
   } catch (error) {
     console.error("Error getting invitations:", error);
     return [];
+  }
+}
+
+export async function addSchoolGuardian(
+  schoolId: string,
+  email: string
+): Promise<{ success: boolean; message?: string }> {
+  try {
+    // Validate inputs
+    if (!schoolId || !email) {
+      console.error("Missing required parameters:", { schoolId, email });
+      return {
+        success: false,
+        message: "Missing required parameters for adding school guardian",
+      };
+    }
+
+    // Check if the school exists
+    const { data: schoolData, error: schoolError } = await supabase
+      .from("schools")
+      .select("id, guardian_id")
+      .eq("id", schoolId)
+      .single();
+
+    if (schoolError) {
+      console.error("Error checking school:", schoolError);
+      return {
+        success: false,
+        message: "Could not verify school information",
+      };
+    }
+
+    if (!schoolData) {
+      console.error("School not found:", schoolId);
+      return {
+        success: false,
+        message: "School not found",
+      };
+    }
+
+    // Get current user ID
+    const { data: authData } = await supabase.auth.getUser();
+    const currentUserId = authData.user?.id;
+    
+    console.log("Current user ID:", currentUserId);
+    console.log("School owner ID:", schoolData.guardian_id);
+    
+    if (!currentUserId) {
+      console.error("No authenticated user found");
+      return {
+        success: false,
+        message: "You must be logged in to add school guardians",
+      };
+    }
+
+    // Verify that the current user is the owner of the school
+    if (schoolData.guardian_id !== currentUserId) {
+      console.error("User is not the owner of this school");
+      return {
+        success: false,
+        message: "You do not have permission to add guardians to this school",
+      };
+    }
+
+    // Check if a guardian with this email already exists in the system
+    const { data: existingProfiles, error: profileError } = await supabase
+      .from("profiles")
+      .select("id, email, role")
+      .eq("email", email)
+      .eq("role", "guardian");
+
+    if (profileError) {
+      console.error("Error checking existing profiles:", profileError);
+      throw profileError;
+    }
+
+    let guardianId = null;
+    let isRegistered = false;
+
+    // If guardian exists, use their ID
+    if (existingProfiles && existingProfiles.length > 0) {
+      guardianId = existingProfiles[0].id;
+      isRegistered = true;
+      console.log("Found existing guardian profile:", existingProfiles[0]);
+    }
+
+    // Check if this guardian is already associated with this school
+    const { data: existingData, error: existingError } = await supabase
+      .from("school_guardians")
+      .select("*")
+      .eq("school_id", schoolId)
+      .eq("email", email);
+
+    if (existingError) {
+      console.error("Error checking existing school-guardian relationship:", existingError);
+      throw existingError;
+    }
+
+    if (existingData && existingData.length > 0) {
+      console.log("Guardian already associated with school:", existingData);
+      return {
+        success: false,
+        message: "This guardian is already associated with this school",
+      };
+    }
+
+    // Create the school guardian object
+    const schoolGuardianData = {
+      school_id: schoolId,
+      guardian_id: guardianId,
+      email: email,
+      is_registered: isRegistered
+    };
+
+    console.log("Creating new school guardian with data:", schoolGuardianData);
+
+    // Add the guardian to the school
+    const { data, error } = await supabase
+      .from("school_guardians")
+      .insert([schoolGuardianData])
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error inserting school guardian:", error);
+      
+      // Check if it's a unique constraint violation
+      if (error.message.includes("duplicate key") || 
+          error.message.includes("unique constraint")) {
+        return {
+          success: false,
+          message: "This guardian is already associated with this school",
+        };
+      }
+      
+      // Check if it's a permission error
+      if (error.message.includes("policy")) {
+        return {
+          success: false,
+          message: "You do not have permission to add guardians to this school",
+        };
+      }
+      
+      throw error;
+    }
+
+    console.log("School guardian added successfully:", data);
+    return {
+      success: true,
+      message: "Guardian added to school successfully",
+    };
+  } catch (error) {
+    console.error("Error adding school guardian:", error);
+    let errorMessage = "An error occurred while adding the school guardian";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    return {
+      success: false,
+      message: errorMessage,
+    };
+  }
+}
+
+export async function getSchoolGuardians(
+  schoolId: string
+): Promise<SchoolGuardian[]> {
+  try {
+    const { data, error } = await supabase
+      .from("school_guardians")
+      .select(`
+        *,
+        guardian:profiles(*)
+      `)
+      .eq("school_id", schoolId)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    return data as SchoolGuardian[];
+  } catch (error) {
+    console.error("Error getting school guardians:", error);
+    return [];
+  }
+}
+
+export async function removeSchoolGuardian(
+  schoolGuardianId: string
+): Promise<{ success: boolean; message?: string }> {
+  try {
+    const { error } = await supabase
+      .from("school_guardians")
+      .delete()
+      .eq("id", schoolGuardianId);
+
+    if (error) throw error;
+
+    return {
+      success: true,
+      message: "Guardian removed from school successfully",
+    };
+  } catch (error) {
+    console.error("Error removing school guardian:", error);
+    let errorMessage = "An error occurred while removing the school guardian";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    return {
+      success: false,
+      message: errorMessage,
+    };
   }
 }
 

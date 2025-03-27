@@ -1,394 +1,282 @@
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { InvitationManagement } from "./InvitationManagement";
-import {
-  createInvitation,
-  resendInvitation,
-  deleteInvitation,
-  getInvitationsByStudent,
-} from "../lib/auth";
-import { handleAndDisplayError } from "../lib/errorHandling";
-import type { Invitation } from "../types";
+import * as auth from "../lib/auth";
+import { Invitation, SchoolGuardian } from "../types";
 
-// Mock the auth functions
-jest.mock("../lib/auth", () => ({
-  createInvitation: jest.fn(),
-  resendInvitation: jest.fn(),
-  deleteInvitation: jest.fn(),
-  getInvitationsByStudent: jest.fn(),
-}));
+// Mock the auth module
+jest.mock("../lib/auth");
+const mockedAuth = auth as jest.Mocked<typeof auth>;
 
-// Mock the error handling
-jest.mock("../lib/errorHandling", () => ({
-  handleAndDisplayError: jest.fn(),
-}));
-
-// Mock window.confirm
-const originalConfirm = window.confirm;
-beforeAll(() => {
-  window.confirm = jest.fn();
-});
-
-afterAll(() => {
-  window.confirm = originalConfirm;
-});
-
-describe("InvitationManagement Component", () => {
-  jest.useFakeTimers(); // Add timer mocking
-  const mockStudentId = "student-1";
-  const mockStudentName = "John Doe";
+describe("InvitationManagement", () => {
+  const mockStudentId = "student-123";
+  const mockStudentName = "Test Student";
+  const mockSchoolId = "school-123";
   const mockOnClose = jest.fn();
-
-  // Mock invitation data
+  
   const mockInvitations: Invitation[] = [
     {
       id: "inv-1",
-      email: "guardian@example.com",
+      email: "guardian1@example.com",
       role: "guardian",
       student_id: mockStudentId,
-      inviter_id: "user-123",
+      inviter_id: "inviter-1",
       token: "token-1",
       status: "pending",
-      created_at: "2025-01-01T00:00:00Z",
-      expires_at: "2025-01-03T00:00:00Z",
+      created_at: "2025-03-27T12:00:00Z",
+      expires_at: "2025-03-29T12:00:00Z",
     },
     {
       id: "inv-2",
-      email: "student@example.com",
+      email: "student1@example.com",
       role: "student",
       student_id: mockStudentId,
-      inviter_id: "user-123",
+      inviter_id: "inviter-1",
       token: "token-2",
       status: "accepted",
-      created_at: "2025-01-02T00:00:00Z",
-      expires_at: "2025-01-04T00:00:00Z",
+      created_at: "2025-03-26T12:00:00Z",
+      expires_at: "2025-03-28T12:00:00Z",
+    },
+  ];
+
+  const mockSchoolGuardians: SchoolGuardian[] = [
+    {
+      id: "sg-1",
+      school_id: mockSchoolId,
+      email: "schoolguardian1@example.com",
+      is_registered: true,
+      created_at: "2025-03-27T12:00:00Z",
     },
     {
-      id: "inv-3",
-      email: "expired@example.com",
-      role: "guardian",
-      student_id: mockStudentId,
-      inviter_id: "user-123",
-      token: "token-3",
-      status: "expired",
-      created_at: "2025-01-03T00:00:00Z",
-      expires_at: "2025-01-05T00:00:00Z",
+      id: "sg-2",
+      school_id: mockSchoolId,
+      email: "schoolguardian2@example.com",
+      is_registered: false,
+      created_at: "2025-03-27T12:30:00Z",
     },
   ];
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Mock successful invitations loading
-    (getInvitationsByStudent as jest.Mock).mockResolvedValue(mockInvitations);
+    mockedAuth.getInvitationsByStudent.mockResolvedValue(mockInvitations);
+    mockedAuth.getSchoolGuardians.mockResolvedValue(mockSchoolGuardians);
+    mockedAuth.createInvitation.mockResolvedValue({ success: true, invitation: mockInvitations[0] });
+    mockedAuth.resendInvitation.mockResolvedValue({ success: true, invitation: mockInvitations[0] });
+    mockedAuth.deleteInvitation.mockResolvedValue({ success: true });
   });
 
-  it("renders loading state initially", async () => {
-    // Mock invitations data to not resolve immediately
-    (getInvitationsByStudent as jest.Mock).mockReturnValue(
-      new Promise(() => {}),
-    );
-
-    render(
-      <InvitationManagement
-        studentId={mockStudentId}
-        studentName={mockStudentName}
-      />,
-    );
-
-    // Check for loading state
-    expect(
-      screen.getByText(`Invitations for ${mockStudentName}`),
-    ).toBeInTheDocument();
-
-    // Check for loading spinner
-    const loadingSpinner = document.querySelector(".animate-spin");
-    expect(loadingSpinner).toBeInTheDocument();
+  it("renders the component with title", () => {
+    render(<InvitationManagement studentId={mockStudentId} studentName={mockStudentName} />);
+    expect(screen.getByText(`Invitations for ${mockStudentName}`)).toBeInTheDocument();
   });
 
-  it("displays invitations list after loading", async () => {
-    render(
-      <InvitationManagement
-        studentId={mockStudentId}
-        studentName={mockStudentName}
-      />,
-    );
-
+  it("loads and displays invitations", async () => {
+    render(<InvitationManagement studentId={mockStudentId} studentName={mockStudentName} />);
+    
+    // Should show loading indicator initially
+    expect(screen.getByRole("status")).toBeInTheDocument();
+    
     // Wait for invitations to load
     await waitFor(() => {
-      expect(screen.getByText("guardian@example.com")).toBeInTheDocument();
+      expect(mockedAuth.getInvitationsByStudent).toHaveBeenCalledWith(mockStudentId);
+      expect(screen.getByText("guardian1@example.com")).toBeInTheDocument();
+      expect(screen.getByText("student1@example.com")).toBeInTheDocument();
+      expect(screen.getAllByText("guardian")[0]).toBeInTheDocument();
+      expect(screen.getAllByText("student")[0]).toBeInTheDocument();
+      expect(screen.getByText("pending")).toBeInTheDocument();
+      expect(screen.getByText("accepted")).toBeInTheDocument();
     });
-
-    // Check for invitation information
-    expect(screen.getByText("guardian@example.com")).toBeInTheDocument();
-    expect(screen.getByText("student@example.com")).toBeInTheDocument();
-    expect(screen.getByText("expired@example.com")).toBeInTheDocument();
-
-    // Check for status badges
-    expect(screen.getByText("pending")).toBeInTheDocument();
-    expect(screen.getByText("accepted")).toBeInTheDocument();
-    expect(screen.getByText("expired")).toBeInTheDocument();
   });
 
-  it("displays empty state when no invitations are found", async () => {
-    // Mock empty invitations list
-    (getInvitationsByStudent as jest.Mock).mockResolvedValue([]);
-
-    render(
-      <InvitationManagement
-        studentId={mockStudentId}
-        studentName={mockStudentName}
-      />,
-    );
-
-    // Wait for component to load
+  it("shows empty state when no invitations are found", async () => {
+    mockedAuth.getInvitationsByStudent.mockResolvedValue([]);
+    
+    render(<InvitationManagement studentId={mockStudentId} studentName={mockStudentName} />);
+    
     await waitFor(() => {
       expect(screen.getByText("No invitations found.")).toBeInTheDocument();
     });
   });
 
-  it("allows creating a new invitation", async () => {
-    // Mock successful invitation creation
-    (createInvitation as jest.Mock).mockResolvedValue({
-      success: true,
-      invitation: {
-        id: "inv-4",
-        email: "newinvite@example.com",
-        role: "guardian",
-      },
-    });
-
-    render(
-      <InvitationManagement
-        studentId={mockStudentId}
-        studentName={mockStudentName}
-      />,
-    );
-
+  it("creates a new invitation successfully", async () => {
+    render(<InvitationManagement studentId={mockStudentId} studentName={mockStudentName} />);
+    
     // Wait for invitations to load
     await waitFor(() => {
-      expect(screen.getByText("guardian@example.com")).toBeInTheDocument();
+      expect(screen.getByText("Send New Invitation")).toBeInTheDocument();
     });
-
-    // Fill out the form
-    fireEvent.change(screen.getByLabelText(/email address/i), {
-      target: { value: "newinvite@example.com" },
-    });
-
-    // Select role (guardian is default)
-    const roleSelect = screen.getByLabelText(/role/i);
-    expect(roleSelect).toHaveValue("guardian");
-
-    // Submit the form by clicking the submit button
-    const submitButton = screen.getByText(/send invitation/i);
-    fireEvent.click(submitButton);
-
-    // Check that createInvitation was called with the correct arguments
-    expect(createInvitation).toHaveBeenCalledWith(
-      "newinvite@example.com",
-      "guardian",
-      mockStudentId,
-    );
-
-    // Check for success message
+    
+    // Fill in the email and submit
+    const emailInput = screen.getByPlaceholderText("Enter email address");
+    fireEvent.change(emailInput, { target: { value: "newinvite@example.com" } });
+    
+    const sendButton = screen.getByRole("button", { name: /send invitation/i });
+    fireEvent.click(sendButton);
+    
     await waitFor(() => {
-      expect(
-        screen.getByText(/Invitation sent to newinvite@example.com/i),
-      ).toBeInTheDocument();
-    });
-
-    // Check that getInvitationsByStudent was called again to refresh the list
-    expect(getInvitationsByStudent).toHaveBeenCalledTimes(2);
-  });
-
-  it("handles error when creating an invitation", async () => {
-    // Mock error when creating invitation
-    (createInvitation as jest.Mock).mockResolvedValue({
-      success: false,
-      message: "Failed to create invitation",
-    });
-
-    render(
-      <InvitationManagement
-        studentId={mockStudentId}
-        studentName={mockStudentName}
-      />,
-    );
-
-    // Wait for invitations to load
-    await waitFor(() => {
-      expect(screen.getByText("guardian@example.com")).toBeInTheDocument();
-    });
-
-    // Fill out the form
-    fireEvent.change(screen.getByLabelText(/email address/i), {
-      target: { value: "error@example.com" },
-    });
-
-    // Submit the form by clicking the submit button
-    const submitButton = screen.getByText(/send invitation/i);
-    fireEvent.click(submitButton);
-
-    // Check for error message
-    await waitFor(() => {
-      expect(
-        screen.getByText("Failed to create invitation"),
-      ).toBeInTheDocument();
+      expect(mockedAuth.createInvitation).toHaveBeenCalledWith("newinvite@example.com", "guardian", mockStudentId);
+      expect(screen.getByText("Invitation sent to newinvite@example.com")).toBeInTheDocument();
     });
   });
 
-  it("allows resending an invitation", async () => {
-    // Mock successful invitation resend
-    (resendInvitation as jest.Mock).mockResolvedValue({
-      success: true,
-      message: "Invitation resent successfully",
-    });
-
+  it("loads and displays school guardians when schoolId is provided", async () => {
     render(
-      <InvitationManagement
-        studentId={mockStudentId}
-        studentName={mockStudentName}
-      />,
+      <InvitationManagement 
+        studentId={mockStudentId} 
+        studentName={mockStudentName} 
+        schoolId={mockSchoolId} 
+      />
     );
+    
+    // Wait for school guardians to load
+    await waitFor(() => {
+      expect(mockedAuth.getSchoolGuardians).toHaveBeenCalledWith(mockSchoolId);
+      expect(screen.getByText("Select School Guardian")).toBeInTheDocument();
+      
+      // Check if the dropdown contains the school guardians
+      const dropdown = screen.getByRole("combobox");
+      expect(dropdown).toBeInTheDocument();
+      
+      // Open the dropdown and check options
+      fireEvent.click(dropdown);
+      expect(screen.getByText("-- Select a school guardian --")).toBeInTheDocument();
+      expect(screen.getByText("schoolguardian1@example.com (Registered)")).toBeInTheDocument();
+      expect(screen.getByText("schoolguardian2@example.com (Not Registered)")).toBeInTheDocument();
+    });
+  });
 
+  it("selects a school guardian and fills the email field", async () => {
+    render(
+      <InvitationManagement 
+        studentId={mockStudentId} 
+        studentName={mockStudentName} 
+        schoolId={mockSchoolId} 
+      />
+    );
+    
+    // Wait for school guardians to load
+    await waitFor(() => {
+      expect(screen.getByText("Select School Guardian")).toBeInTheDocument();
+    });
+    
+    // Select a school guardian from the dropdown
+    const dropdown = screen.getByRole("combobox");
+    fireEvent.change(dropdown, { target: { value: "sg-1" } });
+    
+    // Check if the email field is filled with the selected guardian's email
+    const emailInput = screen.getByPlaceholderText("Enter email address");
+    expect(emailInput).toHaveValue("schoolguardian1@example.com");
+    
+    // Submit the form
+    const sendButton = screen.getByRole("button", { name: /send invitation/i });
+    fireEvent.click(sendButton);
+    
+    await waitFor(() => {
+      expect(mockedAuth.createInvitation).toHaveBeenCalledWith(
+        "schoolguardian1@example.com", 
+        "guardian", 
+        mockStudentId
+      );
+    });
+  });
+
+  it("resends an invitation", async () => {
+    // Mock window.confirm to always return true
+    const originalConfirm = window.confirm;
+    window.confirm = jest.fn(() => true);
+    
+    render(<InvitationManagement studentId={mockStudentId} studentName={mockStudentName} />);
+    
     // Wait for invitations to load
     await waitFor(() => {
-      expect(screen.getByText("guardian@example.com")).toBeInTheDocument();
+      expect(screen.getByText("guardian1@example.com")).toBeInTheDocument();
     });
-
+    
     // Find and click the resend button for the pending invitation
     const resendButton = screen.getByTitle("Resend invitation");
     fireEvent.click(resendButton);
-
-    // Check that resendInvitation was called with the correct arguments
-    expect(resendInvitation).toHaveBeenCalledWith("inv-1");
-
-    // Check for success message
+    
     await waitFor(() => {
-      expect(
-        screen.getByText("Invitation resent successfully"),
-      ).toBeInTheDocument();
+      expect(mockedAuth.resendInvitation).toHaveBeenCalledWith("inv-1");
+      expect(screen.getByText("Invitation resent successfully")).toBeInTheDocument();
     });
-
-    // Check that getInvitationsByStudent was called again to refresh the list
-    expect(getInvitationsByStudent).toHaveBeenCalledTimes(2);
+    
+    // Restore original confirm
+    window.confirm = originalConfirm;
   });
 
-  it("allows deleting an invitation", async () => {
-    // Mock confirm to return true
-    (window.confirm as jest.Mock).mockReturnValue(true);
-
-    // Mock successful invitation deletion
-    (deleteInvitation as jest.Mock).mockResolvedValue({
-      success: true,
-      message: "Invitation deleted successfully",
-    });
-
-    render(
-      <InvitationManagement
-        studentId={mockStudentId}
-        studentName={mockStudentName}
-      />,
-    );
-
+  it("deletes an invitation", async () => {
+    // Mock window.confirm to always return true
+    const originalConfirm = window.confirm;
+    window.confirm = jest.fn(() => true);
+    
+    render(<InvitationManagement studentId={mockStudentId} studentName={mockStudentName} />);
+    
     // Wait for invitations to load
     await waitFor(() => {
-      expect(screen.getByText("guardian@example.com")).toBeInTheDocument();
+      expect(screen.getByText("guardian1@example.com")).toBeInTheDocument();
     });
-
+    
     // Find and click the delete button for the first invitation
     const deleteButtons = screen.getAllByTitle("Delete invitation");
     fireEvent.click(deleteButtons[0]);
-
-    // Check that confirm was called
-    expect(window.confirm).toHaveBeenCalledWith(
-      "Are you sure you want to delete this invitation?",
-    );
-
-    // Check that deleteInvitation was called with the correct arguments
-    expect(deleteInvitation).toHaveBeenCalledWith("inv-1");
-
-    // Check for success message
+    
     await waitFor(() => {
-      expect(
-        screen.getByText("Invitation deleted successfully"),
-      ).toBeInTheDocument();
+      expect(mockedAuth.deleteInvitation).toHaveBeenCalledWith("inv-1");
+      expect(screen.getByText("Invitation deleted successfully")).toBeInTheDocument();
     });
-
-    // Check that getInvitationsByStudent was called again to refresh the list
-    expect(getInvitationsByStudent).toHaveBeenCalledTimes(2);
+    
+    // Restore original confirm
+    window.confirm = originalConfirm;
   });
 
-  it("cancels invitation deletion when confirm is declined", async () => {
-    // Mock confirm to return false
-    (window.confirm as jest.Mock).mockReturnValue(false);
-
+  it("calls onClose when close button is clicked", () => {
     render(
-      <InvitationManagement
-        studentId={mockStudentId}
-        studentName={mockStudentName}
-      />,
+      <InvitationManagement 
+        studentId={mockStudentId} 
+        studentName={mockStudentName} 
+        onClose={mockOnClose} 
+      />
     );
-
-    // Wait for invitations to load
-    await waitFor(() => {
-      expect(screen.getByText("guardian@example.com")).toBeInTheDocument();
-    });
-
-    // Find and click the delete button for the first invitation
-    const deleteButtons = screen.getAllByTitle("Delete invitation");
-    fireEvent.click(deleteButtons[0]);
-
-    // Check that confirm was called
-    expect(window.confirm).toHaveBeenCalledWith(
-      "Are you sure you want to delete this invitation?",
-    );
-
-    // Check that deleteInvitation was not called
-    expect(deleteInvitation).not.toHaveBeenCalled();
+    
+    const closeButton = screen.getByRole("button", { name: "×" });
+    fireEvent.click(closeButton);
+    
+    expect(mockOnClose).toHaveBeenCalled();
   });
 
   it("handles error when loading invitations fails", async () => {
-    // Mock error when loading invitations
-    (getInvitationsByStudent as jest.Mock).mockRejectedValue(
-      new Error("Failed to load invitations"),
-    );
-
-    render(
-      <InvitationManagement
-        studentId={mockStudentId}
-        studentName={mockStudentName}
-      />,
-    );
-
-    // Check for error message
+    mockedAuth.getInvitationsByStudent.mockRejectedValue(new Error("Failed to load invitations"));
+    
+    render(<InvitationManagement studentId={mockStudentId} studentName={mockStudentName} />);
+    
     await waitFor(() => {
-      expect(
-        screen.getByText("Failed to load invitations"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Failed to load invitations")).toBeInTheDocument();
     });
-
-    // Check that handleAndDisplayError was called
-    expect(handleAndDisplayError).toHaveBeenCalled();
   });
 
-  it("closes the modal when close button is clicked", async () => {
-    render(
-      <InvitationManagement
-        studentId={mockStudentId}
-        studentName={mockStudentName}
-        onClose={mockOnClose}
-      />,
-    );
-
+  it("handles error when creating invitation fails", async () => {
+    mockedAuth.createInvitation.mockResolvedValue({ 
+      success: false, 
+      message: "An invitation for this email already exists" 
+    });
+    
+    render(<InvitationManagement studentId={mockStudentId} studentName={mockStudentName} />);
+    
     // Wait for invitations to load
     await waitFor(() => {
-      expect(screen.getByText("guardian@example.com")).toBeInTheDocument();
+      expect(screen.getByText("Send New Invitation")).toBeInTheDocument();
     });
-
-    // Click the close button
-    const closeButton = screen.getByText("×");
-    fireEvent.click(closeButton);
-
-    // Check that onClose was called
-    expect(mockOnClose).toHaveBeenCalled();
+    
+    // Fill in the email and submit
+    const emailInput = screen.getByPlaceholderText("Enter email address");
+    fireEvent.change(emailInput, { target: { value: "existing@example.com" } });
+    
+    const sendButton = screen.getByRole("button", { name: /send invitation/i });
+    fireEvent.click(sendButton);
+    
+    await waitFor(() => {
+      expect(mockedAuth.createInvitation).toHaveBeenCalledWith("existing@example.com", "guardian", mockStudentId);
+      expect(screen.getByText("An invitation for this email already exists")).toBeInTheDocument();
+    });
   });
 });

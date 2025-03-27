@@ -79,6 +79,9 @@ All dependencies are managed through package.json with specific version requirem
      - schools: School information
      - courses: Course information for students
      - test_scores: Test score records
+     - student_guardians: Junction table for many-to-many relationship between students and guardians
+     - standard_courses: Catalog of standard courses with categories and recommended grade levels
+     - invitations: Stores invitation data for guardians and students with tokens, expiration dates, and status
 
 4. Authentication
 
@@ -86,6 +89,11 @@ All dependencies are managed through package.json with specific version requirem
    - Role-based access
    - Session management
    - Profile creation
+   - Invitation system:
+     - Token-based invitations for guardians and students
+     - Invitation acceptance flow
+     - Automatic expiration handling
+     - Permission verification through RLS policies
 
 5. Data Validation
    - Test score ranges
@@ -157,6 +165,12 @@ All dependencies are managed through package.json with specific version requirem
    - Check for expired tokens
    - Verify email templates in Supabase dashboard
    - Test authentication flow in incognito mode
+   - For invitation issues:
+     - Check browser console for detailed error logs
+     - Verify the student exists in the database
+     - Ensure the current user has permission to invite others for the student
+     - Check for existing invitations with the same email, student, and role
+     - Verify RLS policies are correctly configured for invitations table
 
 5. **Test Failures After File Reorganization**
    - Check import paths in test files

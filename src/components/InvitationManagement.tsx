@@ -1,31 +1,55 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { RefreshCw, Send, Trash2 } from "lucide-react";
-import type { Invitation } from "../types";
+import type { Invitation, SchoolGuardian } from "../types";
 import {
   createInvitation,
   resendInvitation,
   deleteInvitation,
   getInvitationsByStudent,
+  getSchoolGuardians,
 } from "../lib/auth";
 import { handleAndDisplayError } from "../lib/errorHandling";
 
 interface InvitationManagementProps {
   studentId: string;
   studentName: string;
+  schoolId?: string;
   onClose?: () => void;
 }
 
 export function InvitationManagement({
   studentId,
   studentName,
+  schoolId,
   onClose,
 }: InvitationManagementProps) {
   const [loading, setLoading] = useState(true);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [schoolGuardians, setSchoolGuardians] = useState<SchoolGuardian[]>([]);
+  const [selectedSchoolGuardian, setSelectedSchoolGuardian] = useState<string | null>(null);
   const [newEmail, setNewEmail] = useState("");
   const [role, setRole] = useState<"guardian" | "student">("guardian");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Load school guardians if schoolId is provided
+  const loadSchoolGuardians = useCallback(async () => {
+    if (!schoolId) return;
+    
+    try {
+      const guardians = await getSchoolGuardians(schoolId);
+      setSchoolGuardians(guardians);
+    } catch (err) {
+      handleAndDisplayError(err, "InvitationManagement.loadSchoolGuardians");
+      console.error("Failed to load school guardians:", err);
+    }
+  }, [schoolId]);
+
+  useEffect(() => {
+    if (schoolId) {
+      loadSchoolGuardians();
+    }
+  }, [schoolId, loadSchoolGuardians]);
 
   const loadInvitations = useCallback(async () => {
     setLoading(true);
@@ -159,6 +183,45 @@ export function InvitationManagement({
       <div>
         <h3 className="text-lg font-medium mb-2">Send New Invitation</h3>
         <form onSubmit={handleCreateInvitation} className="space-y-4">
+          {schoolId && schoolGuardians.length > 0 && (
+            <div>
+              <label
+                htmlFor="schoolGuardian"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Select School Guardian
+              </label>
+              <select
+                id="schoolGuardian"
+                value={selectedSchoolGuardian || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === "") {
+                    setSelectedSchoolGuardian(null);
+                    setNewEmail("");
+                  } else {
+                    setSelectedSchoolGuardian(value);
+                    const guardian = schoolGuardians.find(g => g.id === value);
+                    if (guardian) {
+                      setNewEmail(guardian.email);
+                    }
+                  }
+                }}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">-- Select a school guardian --</option>
+                {schoolGuardians.map((guardian) => (
+                  <option key={guardian.id} value={guardian.id}>
+                    {guardian.email} {guardian.is_registered ? "(Registered)" : "(Not Registered)"}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-sm text-gray-500">
+                Or enter a new email address below
+              </p>
+            </div>
+          )}
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="col-span-2">
               <label
@@ -171,7 +234,13 @@ export function InvitationManagement({
                 id="email"
                 type="email"
                 value={newEmail}
-                onChange={(e) => setNewEmail(e.target.value)}
+                onChange={(e) => {
+                  setNewEmail(e.target.value);
+                  // If email changes, deselect any school guardian
+                  if (selectedSchoolGuardian) {
+                    setSelectedSchoolGuardian(null);
+                  }
+                }}
                 required
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter email address"

@@ -364,10 +364,11 @@ export function StudentManagement({
                           name: student.name,
                         })
                       }
-                      className="text-green-600 hover:text-green-800"
-                      title="Manage guardians"
+                      className="flex items-center gap-1 px-2 py-1 text-white bg-green-600 rounded-md hover:bg-green-700"
+                      title="Manage guardians and invitations"
                     >
-                      <Users size={18} />
+                      <Users size={16} />
+                      <span className="text-xs">Manage Access</span>
                     </button>
                     <button
                       onClick={() => handleDeleteStudent(student.id)}

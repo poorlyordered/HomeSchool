@@ -143,3 +143,31 @@
   - Primary guardian designation with `is_primary` flag
   - Cascading deletes with `ON DELETE CASCADE` for referential integrity
   - Unique constraints to prevent duplicate relationships
+
+## Invitation System Patterns
+
+- Token-based invitation system for guardians and students
+- Invitation data stored in `invitations` table with:
+  - Unique token generation using UUID
+  - Expiration handling with `expires_at` timestamp
+  - Status tracking (pending, accepted, expired)
+  - Association with student and inviter
+  - Email address of invitee
+  - Role specification (guardian or student)
+- Security measures:
+  - Row-level security (RLS) policies to restrict invitation creation and viewing
+  - Automatic expiration of old invitations via database trigger
+  - Unique constraint on email, student_id, and role to prevent duplicates
+- Invitation workflow:
+  - Guardian creates invitation for another guardian or student
+  - System generates unique token and sets expiration date
+  - Invitee receives invitation link (email delivery planned for future)
+  - Invitee accepts invitation by creating account or signing in
+  - System verifies token validity and expiration
+  - System links the invitee to the student based on role
+  - Invitation status updated to "accepted"
+- Error handling:
+  - Validation of inputs before creating invitations
+  - Specific error messages for different failure scenarios
+  - Detailed logging for troubleshooting
+  - Permission verification through database RLS policies

@@ -1,15 +1,17 @@
-import { useState, useEffect } from "react";
-import { X, Save, AlertCircle, Check, School } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { X, Save, AlertCircle, Check, School, Mail, Users } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { updatePassword, updateEmail, deleteAccount } from "../lib/auth";
-import type { User } from "../types";
+import { InvitationManagement } from "./InvitationManagement";
+import { SchoolGuardianManagement } from "./SchoolGuardianManagement";
+import type { User, StudentData } from "../types";
 
 interface AccountSettingsProps {
   user: User;
   onClose: () => void;
 }
 
-type Tab = "profile" | "school" | "security" | "delete";
+type Tab = "profile" | "school" | "security" | "delete" | "invitations" | "school-guardians";
 
 export function AccountSettings({ user, onClose }: AccountSettingsProps) {
   const [activeTab, setActiveTab] = useState<Tab>("profile");
@@ -38,6 +40,36 @@ export function AccountSettings({ user, onClose }: AccountSettingsProps) {
     address: "",
     phone: "",
   });
+
+  // Students data for invitations
+  const [students, setStudents] = useState<StudentData[]>([]);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [selectedStudentName, setSelectedStudentName] = useState<string>("");
+
+  // Function to load students for the current guardian
+  const loadStudents = useCallback(async () => {
+    if (user.profile.role !== "guardian") return;
+    
+    try {
+      const { data, error } = await supabase
+        .from("students")
+        .select("*")
+        .eq("guardian_id", user.id);
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        setStudents(data);
+        // Select the first student by default if none is selected
+        if (!selectedStudentId) {
+          setSelectedStudentId(data[0].id);
+          setSelectedStudentName(data[0].name);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading students:", error);
+    }
+  }, [user.id, user.profile.role, selectedStudentId]);
 
   useEffect(() => {
     // Load user profile data
@@ -81,11 +113,19 @@ export function AccountSettings({ user, onClose }: AccountSettingsProps) {
 
     loadProfile();
 
-    // Only load school data if user is a guardian
+    // Only load school data and students if user is a guardian
     if (user.profile.role === "guardian") {
       loadSchool();
+      loadStudents();
     }
-  }, [user.id, user.profile.role]);
+  }, [user.id, user.profile.role, loadStudents]);
+
+  // Load students when invitations tab is selected
+  useEffect(() => {
+    if (activeTab === "invitations" && user.profile.role === "guardian") {
+      loadStudents();
+    }
+  }, [activeTab, user.profile.role, loadStudents]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -269,6 +309,24 @@ export function AccountSettings({ user, onClose }: AccountSettingsProps) {
               onClick={() => setActiveTab("school")}
             >
               School
+            </button>
+          )}
+          {user.profile.role === "guardian" && (
+            <button
+              className={`px-6 py-3 font-medium text-sm flex items-center gap-1 ${activeTab === "invitations" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700"}`}
+              onClick={() => setActiveTab("invitations")}
+            >
+              <Mail size={16} />
+              Invitations
+            </button>
+          )}
+          {user.profile.role === "guardian" && (
+            <button
+              className={`px-6 py-3 font-medium text-sm flex items-center gap-1 ${activeTab === "school-guardians" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700"}`}
+              onClick={() => setActiveTab("school-guardians")}
+            >
+              <Users size={16} />
+              School Guardians
             </button>
           )}
           <button
@@ -587,6 +645,91 @@ export function AccountSettings({ user, onClose }: AccountSettingsProps) {
                   </button>
                 </div>
               </form>
+            </div>
+          )}
+
+          {activeTab === "invitations" && user.profile.role === "guardian" && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Mail size={24} className="text-blue-600" />
+                <h3 className="text-lg font-medium text-gray-900">
+                  Manage Invitations
+                </h3>
+              </div>
+
+              {students.length === 0 ? (
+                <div className="p-4 bg-yellow-50 text-yellow-800 rounded-md">
+                  <p>You need to add students before you can send invitations.</p>
+                  <p className="mt-2">
+                    Go to the Guardian Dashboard and click "Manage Students" to add students.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label
+                      htmlFor="studentSelect"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Select Student
+                    </label>
+                    <select
+                      id="studentSelect"
+                      value={selectedStudentId || ""}
+                      onChange={(e) => {
+                        const id = e.target.value;
+                        setSelectedStudentId(id);
+                        const student = students.find((s) => s.id === id);
+                        if (student) {
+                          setSelectedStudentName(student.name);
+                        }
+                      }}
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2"
+                    >
+                      {students.map((student) => (
+                        <option key={student.id} value={student.id}>
+                          {student.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {selectedStudentId && (
+                    <div className="mt-4">
+                      <InvitationManagement
+                        studentId={selectedStudentId}
+                        studentName={selectedStudentName}
+                        schoolId={schoolData.id}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {activeTab === "school-guardians" && user.profile.role === "guardian" && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Users size={24} className="text-blue-600" />
+                <h3 className="text-lg font-medium text-gray-900">
+                  School Guardians
+                </h3>
+              </div>
+              
+              {schoolData.id ? (
+                <SchoolGuardianManagement
+                  schoolId={schoolData.id}
+                  onClose={() => setActiveTab("profile")}
+                />
+              ) : (
+                <div className="p-4 bg-yellow-50 text-yellow-800 rounded-md">
+                  <p>You need to set up your school information first.</p>
+                  <p className="mt-2">
+                    Go to the School tab to add your school information.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
