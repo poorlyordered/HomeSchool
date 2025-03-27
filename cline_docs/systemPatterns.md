@@ -108,6 +108,14 @@
 - Git hooks for pre-commit and pre-push validation:
   - Linting and formatting checks before commits
   - Type checking and tests before pushing to remote
+- Test file organization:
+  - Two approaches to test file organization:
+    1. Centralized testing directory: `src/__tests__/` with subdirectories for components, hooks, and lib
+    2. Co-location pattern: Test files placed alongside the components they test
+  - Migration toward co-location pattern for better maintainability
+  - Component tests follow naming convention: `ComponentName.test.tsx`
+  - Helper functions in `src/__tests__/helpers/` directory
+  - Standardized mock implementation for Supabase in `src/lib/__mocks__/supabase.ts`
 - Playwright for end-to-end testing (planned):
   - Page Object Model pattern for UI abstraction
   - Test fixtures for authentication and common setup

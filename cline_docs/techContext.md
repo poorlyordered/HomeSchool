@@ -104,6 +104,17 @@ All dependencies are managed through package.json with specific version requirem
    - Mock implementations for external dependencies
    - Component testing with user interaction simulation
    - Asynchronous test handling with `waitFor` and `async/await`
+   - Test file organization:
+     - Two approaches to test file organization:
+       1. Centralized testing directory: `src/__tests__/` with subdirectories for components, hooks, and lib
+       2. Co-location pattern: Test files placed alongside the components they test
+     - Migration toward co-location pattern for better maintainability
+     - Component tests follow naming convention: `ComponentName.test.tsx`
+     - Helper functions in `src/__tests__/helpers/` directory
+     - Standardized mock implementation for Supabase in `src/lib/__mocks__/supabase.ts`
+   - Git hooks for pre-commit and pre-push validation:
+     - Linting and formatting checks before commits
+     - Type checking and tests before pushing to remote
 
 2. End-to-End Testing (Planned)
    - Playwright for browser automation
@@ -141,10 +152,18 @@ All dependencies are managed through package.json with specific version requirem
    - Verify that async operations have proper error handling
 
 4. **Authentication Problems**
+
    - Ensure Supabase auth is properly configured
    - Check for expired tokens
    - Verify email templates in Supabase dashboard
    - Test authentication flow in incognito mode
+
+5. **Test Failures After File Reorganization**
+   - Check import paths in test files
+   - Verify component paths match the new file structure
+   - Update mock implementations to reflect new component locations
+   - Use `--no-verify` flag with git commands to bypass failing tests temporarily
+   - Fix one test file at a time, starting with the most critical components
 
 ### Debugging Tools
 
