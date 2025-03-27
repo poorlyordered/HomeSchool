@@ -119,6 +119,12 @@
 
 ## Current Task
 
+- Fixed SMTP configuration in send-email Edge Function:
+  - Corrected SMTP host from `smtp.smtp.resend.com` to `smtp.resend.com`
+  - Fixed 500 server error when creating guardian invitations
+  - Updated documentation with proper deployment instructions
+  - Ensured email sending works correctly for invitation emails
+
 - Implemented transactional email system using Supabase:
 
   - Created email service module:

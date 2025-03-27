@@ -57,6 +57,11 @@
 - [x] Add session expiration handling
 - [x] Create account management features
 - [x] Implement navigation between authentication pages
+- [x] Fixed SMTP configuration in send-email Edge Function:
+  - [x] Corrected SMTP host from `smtp.smtp.resend.com` to `smtp.resend.com`
+  - [x] Fixed 500 server error when creating guardian invitations
+  - [x] Updated documentation with proper deployment instructions
+  - [x] Ensured email sending works correctly for invitation emails
 - [x] Implemented transactional email system:
   - [x] Created email service module for sending various types of emails
   - [x] Implemented Supabase Edge Function for email delivery
