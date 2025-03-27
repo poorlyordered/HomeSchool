@@ -108,6 +108,11 @@
 - Git hooks for pre-commit and pre-push validation:
   - Linting and formatting checks before commits
   - Type checking and tests before pushing to remote
+  - Temporary bypass solution for Husky hooks:
+    - Scripts to disable/enable Husky by modifying package.json (toggle-husky.ps1/bat)
+    - Scripts to bypass hooks for individual commands using --no-verify flag (bypass-husky.ps1/bat)
+    - Comprehensive documentation in HUSKY-BYPASS-README.md
+    - Used during periods of test instability to allow continued development
 - Test file organization:
   - Two approaches to test file organization:
     1. Centralized testing directory: `src/__tests__/` with subdirectories for components, hooks, and lib

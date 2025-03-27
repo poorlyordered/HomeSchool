@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { validateInvitation, acceptInvitation } from "../lib/auth";
-import type { User, Invitation } from "../types";
+import { handleAndDisplayError } from "../lib/errorHandling";
+import type { User } from "../types";
 
 interface InvitationAcceptProps {
   user: User | null;
@@ -11,215 +12,242 @@ export function InvitationAccept({ user }: InvitationAcceptProps) {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [validating, setValidating] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [invitation, setInvitation] = useState<Invitation | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [invitationDetails, setInvitationDetails] = useState<{
+    email: string;
+    role: string;
+    studentName?: string;
+  } | null>(null);
 
   useEffect(() => {
-    async function checkInvitation() {
+    async function validateToken() {
       if (!token) {
         setError("Invalid invitation link. No token provided.");
-        setLoading(false);
+        setValidating(false);
         return;
       }
 
       try {
         const result = await validateInvitation(token);
-        if (!result.valid) {
-          setError(result.message || "Invalid invitation");
-        } else if (result.invitation) {
-          setInvitation(result.invitation);
+
+        if (!result.valid || !result.invitation) {
+          setError(result.message || "Invalid invitation token");
+          setValidating(false);
+          return;
         }
+
+        setInvitationDetails({
+          email: result.invitation.email,
+          role: result.invitation.role,
+          studentName: result.invitation.student?.name,
+        });
+        setValidating(false);
       } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "An error occurred while validating the invitation",
-        );
-      } finally {
-        setLoading(false);
+        handleAndDisplayError(err, "InvitationAccept.validateToken");
+        setError("Failed to validate invitation");
+        setValidating(false);
       }
     }
 
-    checkInvitation();
+    validateToken();
   }, [token]);
 
   const handleAcceptInvitation = async () => {
-    if (!token || !user) return;
+    if (!user) {
+      // If not logged in, redirect to sign in page with invitation token
+      navigate(`/signin?invitation=${token}`);
+      return;
+    }
+
+    if (!token) {
+      setError("Invalid invitation link. No token provided.");
+      return;
+    }
 
     setLoading(true);
     try {
       const result = await acceptInvitation(token, user.id);
-      if (result.success) {
-        // Redirect to dashboard on success
-        navigate("/");
-      } else {
+
+      if (!result.success) {
         setError(result.message || "Failed to accept invitation");
+        return;
       }
+
+      setSuccess("Invitation accepted successfully");
+
+      // Redirect to appropriate dashboard after a short delay
+      setTimeout(() => {
+        if (user.profile.role === "guardian") {
+          navigate("/guardian-dashboard");
+        } else {
+          navigate("/student-dashboard");
+        }
+      }, 2000);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "An error occurred while accepting the invitation",
-      );
+      handleAndDisplayError(err, "InvitationAccept.handleAcceptInvitation");
+      setError("Failed to accept invitation");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoToHome = () => {
-    navigate("/");
-  };
-
-  const handleSignIn = () => {
-    navigate(`/signin?invitation=${token}`);
-  };
-
-  const handleCreateAccount = () => {
+  const handleSignUp = () => {
+    if (!token) return;
     navigate(`/signup?invitation=${token}`);
   };
 
-  if (loading) {
+  if (validating) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Validating Invitation
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Please wait while we validate your invitation...
-          </p>
-          <div className="flex justify-center mt-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+        <h1 className="text-2xl font-bold text-center mb-6">
+          Validating Invitation
+        </h1>
+        <div className="flex justify-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
         </div>
+        <p className="text-center mt-4 text-gray-600">
+          Please wait while we validate your invitation...
+        </p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Invitation Error
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">{error}</p>
-          <div className="mt-8 flex justify-center">
-            <button
-              onClick={handleGoToHome}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Go to Home
-            </button>
-          </div>
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+        <h1 className="text-2xl font-bold text-center mb-6">
+          Invitation Error
+        </h1>
+        <div className="p-4 bg-red-50 text-red-800 rounded-md mb-4">
+          {error}
+        </div>
+        <div className="flex justify-center">
+          <button
+            onClick={() => navigate("/")}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Go to Home
+          </button>
         </div>
       </div>
     );
   }
 
-  if (!invitation) {
+  if (!invitationDetails) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Invitation Error
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            No invitation details found. Please check your link and try again.
-          </p>
-          <div className="mt-8 flex justify-center">
-            <button
-              onClick={handleGoToHome}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Go to Home
-            </button>
-          </div>
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+        <h1 className="text-2xl font-bold text-center mb-6">
+          Invalid Invitation
+        </h1>
+        <p className="text-center mb-4 text-gray-600">
+          The invitation link appears to be invalid or has expired.
+        </p>
+        <div className="flex justify-center">
+          <button
+            onClick={() => navigate("/")}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Go to Home
+          </button>
         </div>
       </div>
     );
   }
 
-  // User is logged in and can accept the invitation
-  if (user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Accept Invitation
-          </h2>
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 mt-8">
-            <p className="text-center mb-6">
-              You have been invited to join{" "}
-              {invitation.student?.name || "a student"}'s homeschool account as
-              a <span className="font-semibold">{invitation.role}</span>.
-            </p>
-
-            <p className="text-center mb-6">
-              Your email ({user.email}) is already logged in. Would you like to
-              accept this invitation?
-            </p>
-
-            <div className="flex flex-col space-y-4">
-              <button
-                onClick={handleAcceptInvitation}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Accept Invitation
-              </button>
-              <button
-                onClick={handleGoToHome}
-                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // User is not logged in, show options to sign in or create account
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Invitation
-        </h2>
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 mt-8">
-          <p className="text-center mb-6">
-            You have been invited to join{" "}
-            {invitation.student?.name || "a student"}'s homeschool account as a{" "}
-            <span className="font-semibold">{invitation.role}</span>.
-          </p>
+    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+      <h1 className="text-2xl font-bold text-center mb-6">Invitation</h1>
 
-          <p className="text-center mb-6">
-            Please sign in or create an account to accept this invitation.
-          </p>
-
-          <div className="flex flex-col space-y-4">
-            <button
-              onClick={handleSignIn}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Sign In
-            </button>
-            <button
-              onClick={handleCreateAccount}
-              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Create Account
-            </button>
-            <button
-              onClick={handleGoToHome}
-              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-500 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Cancel
-            </button>
-          </div>
+      {success ? (
+        <div className="p-4 bg-green-50 text-green-800 rounded-md mb-4">
+          {success}
         </div>
-      </div>
+      ) : (
+        <>
+          <p className="mb-4">
+            You have been invited to join{" "}
+            {invitationDetails.studentName ? (
+              <span className="font-semibold">
+                {invitationDetails.studentName}'s
+              </span>
+            ) : (
+              "a student's"
+            )}{" "}
+            account as a{" "}
+            <span className="font-semibold">{invitationDetails.role}</span>.
+          </p>
+
+          <p className="mb-6">
+            This invitation was sent to{" "}
+            <span className="font-semibold">{invitationDetails.email}</span>.
+          </p>
+
+          {user ? (
+            user.email === invitationDetails.email ? (
+              <div className="space-y-4">
+                <p className="text-gray-700">
+                  You are currently logged in as{" "}
+                  <span className="font-semibold">{user.email}</span>.
+                </p>
+                <button
+                  onClick={handleAcceptInvitation}
+                  disabled={loading}
+                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {loading ? "Processing..." : "Accept Invitation"}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="p-4 bg-yellow-50 text-yellow-800 rounded-md">
+                  <p>
+                    You are currently logged in as{" "}
+                    <span className="font-semibold">{user.email}</span>, but
+                    this invitation was sent to{" "}
+                    <span className="font-semibold">
+                      {invitationDetails.email}
+                    </span>
+                    .
+                  </p>
+                  <p className="mt-2">
+                    Please log out and sign in with the email address this
+                    invitation was sent to.
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate("/logout")}
+                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                  Log Out
+                </button>
+              </div>
+            )
+          ) : (
+            <div className="space-y-4">
+              <p className="text-gray-700">
+                To accept this invitation, you need to either sign in or create
+                a new account.
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => navigate(`/signin?invitation=${token}`)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={handleSignUp}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                >
+                  Create Account
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
