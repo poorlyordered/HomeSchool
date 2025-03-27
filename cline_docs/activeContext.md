@@ -119,6 +119,33 @@
 
 ## Current Task
 
+- Implemented transactional email system using Supabase:
+
+  - Created email service module:
+    - Implemented sendInvitationEmail function for sending invitation emails
+    - Implemented sendSchoolGuardianNotification function for notifying guardians added to schools
+    - Implemented sendInvitationAcceptedEmail function for notifying inviters when invitations are accepted
+    - Implemented sendInvitationReminderEmail function for reminding users about pending invitations
+    - Added comprehensive error handling for all email operations
+
+  - Created Supabase Edge Function for email delivery:
+    - Implemented send-email function using Deno runtime
+    - Added support for SMTP configuration via environment variables
+    - Implemented proper error handling and CORS headers
+    - Created detailed README with deployment instructions
+
+  - Integrated email functionality with existing features:
+    - Updated createInvitation function to send invitation emails
+    - Updated acceptInvitation function to send acceptance notification emails
+    - Updated resendInvitation function to resend invitation emails
+    - Updated addSchoolGuardian function to send notification emails
+    - Ensured email failures don't block main functionality
+
+  - Updated documentation:
+    - Added email functionality section to main README
+    - Created detailed deployment instructions for the Edge Function
+    - Documented SMTP configuration requirements
+
 - Implemented school guardians management feature:
 
   - Created database schema for school guardians:

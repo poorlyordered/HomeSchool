@@ -128,6 +128,34 @@
   - API testing integration
   - CI/CD integration via GitHub Actions
 
+## Email Notification Patterns
+
+- Transactional email system using Supabase Edge Functions:
+  - Centralized email service module in `src/lib/emailService.ts`
+  - Supabase Edge Function for email delivery in `supabase/functions/send-email`
+  - SMTP configuration via environment variables
+  - Comprehensive error handling with fallbacks
+  - Non-blocking email operations (failures don't block main functionality)
+
+- Email types and triggers:
+  - Invitation emails when a guardian invites another guardian or student
+  - School guardian notifications when a guardian is added to a school
+  - Invitation acceptance notifications when an invitation is accepted
+  - Invitation reminder emails for pending invitations
+
+- Email content patterns:
+  - Consistent branding and styling
+  - Clear call-to-action buttons
+  - Personalized content with recipient and sender names
+  - Secure token-based links for actions
+  - Fallback text for non-HTML email clients
+
+- Error handling for email operations:
+  - Graceful degradation when email sending fails
+  - Detailed logging for troubleshooting
+  - User feedback independent of email delivery status
+  - Retry mechanisms for critical emails
+
 ## Database Patterns
 
 - Supabase PostgreSQL database for data storage

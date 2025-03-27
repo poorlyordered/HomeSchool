@@ -16,6 +16,8 @@
   - Authentication
   - Row Level Security
   - Real-time subscriptions
+  - Edge Functions for serverless operations
+  - Email delivery via SMTP integration
 
 ## Development Tools
 

@@ -70,6 +70,37 @@ Add the following environment variables in Netlify:
 - `VITE_SUPABASE_ANON_KEY`: Supabase anonymous key
 - `VITE_SUPABASE_URL`: Supabase project URL
 
+## Email Functionality
+
+The application uses Supabase Edge Functions to send transactional emails for various events:
+
+- Invitation emails when a guardian invites another guardian or student
+- School guardian notifications when a guardian is added to a school
+- Invitation acceptance notifications when an invitation is accepted
+- Invitation reminder emails for pending invitations
+
+### Setting Up Email Functionality
+
+1. Deploy the Supabase Edge Function:
+   ```bash
+   cd supabase/functions/send-email
+   supabase functions deploy send-email
+   ```
+
+2. Configure SMTP settings in Supabase:
+   ```bash
+   supabase secrets set SMTP_HOST=your-smtp-host
+   supabase secrets set SMTP_PORT=587
+   supabase secrets set SMTP_USERNAME=your-smtp-username
+   supabase secrets set SMTP_PASSWORD=your-smtp-password
+   supabase secrets set DEFAULT_FROM=noreply@homeschool.app
+   supabase secrets set DEFAULT_REPLY_TO=support@homeschool.app
+   ```
+
+3. For local development, create a `.env.local` file in the `supabase/functions/send-email` directory with the same variables.
+
+See the [send-email README](supabase/functions/send-email/README.md) for more details.
+
 ### Build Configuration
 
 - Build Command: `npm run build`

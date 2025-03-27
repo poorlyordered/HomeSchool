@@ -1,6 +1,11 @@
 import { supabase } from "./supabase";
 import type { User, Profile, Invitation, SchoolGuardian } from "../types";
 import { v4 as uuidv4 } from "uuid";
+import { 
+  sendInvitationEmail, 
+  sendSchoolGuardianNotification,
+  sendInvitationAcceptedEmail 
+} from "./emailService";
 
 export interface VerificationResult {
   success: boolean;
@@ -444,6 +449,41 @@ export async function createInvitation(
       }
 
       console.log("Invitation created successfully:", data);
+      
+      // Send invitation email
+      try {
+        // Get student name
+        const { data: studentData } = await supabase
+          .from("students")
+          .select("name")
+          .eq("id", studentId)
+          .single();
+        
+        // Get inviter name
+        const { data: inviterData } = await supabase
+          .from("profiles")
+          .select("name")
+          .eq("id", user.id)
+          .single();
+        
+        const studentName = studentData?.name || "a student";
+        const inviterName = inviterData?.name || "A guardian";
+        
+        // Send the email
+        await sendInvitationEmail(
+          email,
+          token,
+          studentName,
+          inviterName,
+          role
+        );
+        
+        console.log("Invitation email sent to:", email);
+      } catch (emailError) {
+        // Log the error but don't fail the invitation creation
+        console.error("Error sending invitation email:", emailError);
+      }
+      
       return {
         success: true,
         invitation: data as Invitation,
@@ -621,6 +661,35 @@ export async function acceptInvitation(
 
     if (updateError) throw updateError;
 
+    // Send notification email to the inviter
+    try {
+      // Get student name
+      const { data: studentData } = await supabase
+        .from("students")
+        .select("name")
+        .eq("id", invitation.student_id)
+        .single();
+      
+      // Get invitee name
+      const inviteeName = profile.name || invitation.email;
+      const studentName = studentData?.name || "a student";
+      
+      // Send email to inviter
+      if (invitation.inviter && invitation.inviter.email) {
+        await sendInvitationAcceptedEmail(
+          invitation.inviter.email,
+          inviteeName,
+          studentName,
+          invitation.role
+        );
+        
+        console.log("Invitation acceptance notification sent to:", invitation.inviter.email);
+      }
+    } catch (emailError) {
+      // Log the error but don't fail the invitation acceptance
+      console.error("Error sending invitation acceptance email:", emailError);
+    }
+
     return {
       success: true,
       invitation,
@@ -667,6 +736,40 @@ export async function resendInvitation(
       .single();
 
     if (updateError) throw updateError;
+
+    // Send invitation email again
+    try {
+      // Get student name
+      const { data: studentData } = await supabase
+        .from("students")
+        .select("name")
+        .eq("id", data.student_id)
+        .single();
+      
+      // Get inviter name
+      const { data: inviterData } = await supabase
+        .from("profiles")
+        .select("name")
+        .eq("id", data.inviter_id)
+        .single();
+      
+      const studentName = studentData?.name || "a student";
+      const inviterName = inviterData?.name || "A guardian";
+      
+      // Send the email
+      await sendInvitationEmail(
+        data.email,
+        data.token,
+        studentName,
+        inviterName,
+        data.role as "guardian" | "student"
+      );
+      
+      console.log("Invitation email resent to:", data.email);
+    } catch (emailError) {
+      // Log the error but don't fail the invitation resend
+      console.error("Error resending invitation email:", emailError);
+    }
 
     return {
       success: true,
@@ -859,6 +962,39 @@ export async function addSchoolGuardian(
     }
 
     console.log("School guardian added successfully:", data);
+    
+    // Send notification email to the guardian
+    try {
+      // Get school name
+      const { data: schoolNameData } = await supabase
+        .from("schools")
+        .select("name")
+        .eq("id", schoolId)
+        .single();
+      
+      // Get admin name (current user)
+      const { data: adminData } = await supabase
+        .from("profiles")
+        .select("name")
+        .eq("id", currentUserId)
+        .single();
+      
+      const schoolName = schoolNameData?.name || "your school";
+      const adminName = adminData?.name || "The school administrator";
+      
+      // Send the email
+      await sendSchoolGuardianNotification(
+        email,
+        schoolName,
+        adminName
+      );
+      
+      console.log("School guardian notification sent to:", email);
+    } catch (emailError) {
+      // Log the error but don't fail the guardian addition
+      console.error("Error sending school guardian notification:", emailError);
+    }
+    
     return {
       success: true,
       message: "Guardian added to school successfully",
