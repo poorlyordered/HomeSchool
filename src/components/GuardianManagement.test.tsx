@@ -1,17 +1,17 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import { GuardianManagement } from "../../components/GuardianManagement";
-import { supabase } from "../../lib/supabase";
-import type { User, Profile, StudentGuardian } from "../../types";
+import { GuardianManagement } from "./GuardianManagement";
+import { supabase } from "../lib/supabase";
+import type { User, Profile, StudentGuardian } from "../types";
 
 // Mock dependencies
-jest.mock("../../lib/supabase", () => ({
+jest.mock("../lib/supabase", () => ({
   supabase: {
     from: jest.fn().mockReturnThis(),
   },
 }));
 
 // Mock InvitationManagement component
-jest.mock("../../components/InvitationManagement", () => ({
+jest.mock("./InvitationManagement", () => ({
   InvitationManagement: jest.fn(() => (
     <div data-testid="invitation-management">Invitation Management Mock</div>
   )),

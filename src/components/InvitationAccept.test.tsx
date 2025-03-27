@@ -1,6 +1,6 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import { InvitationAccept } from "../../components/InvitationAccept";
-import { validateInvitation } from "../../lib/auth";
+import { InvitationAccept } from "./InvitationAccept";
+import { validateInvitation } from "../lib/auth";
 
 // Mock react-router-dom
 jest.mock("react-router-dom", () => ({
@@ -9,7 +9,7 @@ jest.mock("react-router-dom", () => ({
 }));
 
 // Mock the auth functions
-jest.mock("../../lib/auth", () => ({
+jest.mock("../lib/auth", () => ({
   validateInvitation: jest.fn(),
   acceptInvitation: jest.fn(),
 }));
