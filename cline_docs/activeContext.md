@@ -119,6 +119,13 @@
 
 ## Current Task
 
+- Fixed invitation system stack depth limit error:
+  - Identified stack depth limit exceeded error when creating invitations
+  - Created migration file to simplify RLS policies for invitations table
+  - Avoided circular references in policy checks
+  - Created bug report and application instructions
+  - Documented the issue and solution
+
 - Fixed SMTP configuration in send-email Edge Function:
   - Corrected SMTP host from `smtp.smtp.resend.com` to `smtp.resend.com`
   - Fixed 500 server error when creating guardian invitations
@@ -330,7 +337,12 @@
 
 ### Current Testing Session (In Progress)
 
-1. Fix remaining test failures:
+1. ~~Apply the invitation RLS policy fix to production:~~ ✓
+   - ~~Use the Supabase dashboard SQL editor to apply the migration~~ ✓
+   - ~~Test invitation creation after applying the fix~~ ✓
+   - ~~Verify security is maintained~~ ✓
+
+2. Fix remaining test failures:
 
    - Update import paths in test files to match new component locations
    - Fix mock implementations for relocated components

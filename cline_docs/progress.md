@@ -240,6 +240,8 @@
   - [x] BUG-003: CourseManagement test timeouts (P3-medium, resolved)
   - [x] BUG-004: Unused 'school' variable in GuardianSetup component (P4-low, resolved)
   - [x] BUG-005: Conditional React hooks in TestScores component (P3-medium, resolved)
+  - [x] BUG-006: SMTP host configuration error (P3-medium, resolved)
+  - [x] BUG-007: Invitation stack depth limit exceeded (P2-high, resolved)
 
 ## Testing Improvements
 
@@ -287,12 +289,14 @@
 29. ~~Create Husky bypass solution for Git operations~~ ✓
 30. ~~Create consolidated testing strategy document (Sprint)~~ ✓
 31. ~~Implement school guardians management feature (Sprint)~~ ✓
-32. Fix remaining test failures after branch merge
-33. Implement Playwright for E2E testing (Project Phase)
-34. Update tests for GuardianDashboard to work with the refactored components
-35. ~~Implement tests for TestScoreManagement component (Deep Work)~~ ✓
-36. ~~Implement tests for TestScores component (Deep Work)~~ ✓
-37. Continue extending error handling to remaining components
-38. Re-enable Husky hooks after fixing test failures
-39. Implement custom user-added courses (Enhancement)
-40. Implement course recommendations (Enhancement)
+32. ~~Fix invitation system stack depth limit error (BUG-007)~~ ✓
+33. ~~Apply invitation RLS policy fix to production~~ ✓
+34. Fix remaining test failures after branch merge
+35. Implement Playwright for E2E testing (Project Phase)
+36. Update tests for GuardianDashboard to work with the refactored components
+37. ~~Implement tests for TestScoreManagement component (Deep Work)~~ ✓
+38. ~~Implement tests for TestScores component (Deep Work)~~ ✓
+39. Continue extending error handling to remaining components
+40. Re-enable Husky hooks after fixing test failures
+41. Implement custom user-added courses (Enhancement)
+42. Implement course recommendations (Enhancement)

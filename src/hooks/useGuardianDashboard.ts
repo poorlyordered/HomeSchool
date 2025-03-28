@@ -184,26 +184,12 @@ export function useGuardianDashboard(user: User) {
   }, []);
 
   const loadStudents = useCallback(async () => {
-    // First check if the student_guardians table exists
-    let useJunctionTable = false;
-    try {
-      // Try to get the table info to see if it exists
-      const { error: tableCheckError } = await supabase
-        .from("student_guardians")
-        .select("id")
-        .limit(1);
-
-      // If no error, the table exists
-      if (!tableCheckError) {
-        useJunctionTable = true;
-      }
-    } catch (err) {
-      console.log(
-        "student_guardians table does not exist yet, using legacy approach",
-        err,
-      );
-    }
-
+    // Use a safer approach to determine which method to use
+    // Instead of checking if the table exists (which can cause 500 errors),
+    // we'll try the junction table approach first and fall back to legacy if it fails
+    
+    let useJunctionTable = true;
+    
     if (useJunctionTable) {
       try {
         // Load students from the student_guardians junction table
@@ -299,7 +285,8 @@ export function useGuardianDashboard(user: User) {
           return;
         }
       } catch (error) {
-        console.error("Error loading students from student_guardians:", error);
+        console.error("Error loading students from student_guardians, falling back to legacy approach:", error);
+        useJunctionTable = false;
       }
     }
 
