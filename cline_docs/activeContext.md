@@ -14,6 +14,14 @@
 
 ## Recent Changes
 
+- Fixed school owner invitation permissions issue:
+  - Identified issue where school owners were not automatically added to the school_guardians table
+  - Created migration file to add existing school owners to the school_guardians table
+  - Implemented database trigger to automatically add school owners to school_guardians when schools are created or updated
+  - Fixed stack depth limit exceeded error when school owners try to send invitations
+  - Created detailed application instructions and bug report
+  - Ensured school owners always have proper permissions to manage their schools
+
 - Merged test/invitation-system branch into master:
 
   - Reorganized test files structure by moving test files to appropriate locations
@@ -342,14 +350,20 @@
    - ~~Test invitation creation after applying the fix~~ ✓
    - ~~Verify security is maintained~~ ✓
 
-2. Fix remaining test failures:
+2. ~~Fix school owner invitation permissions issue:~~ ✓
+   - ~~Create migration to add school owners to school_guardians table~~ ✓
+   - ~~Implement trigger for automatic maintenance~~ ✓
+   - ~~Create application instructions~~ ✓
+   - ~~Document the solution~~ ✓
+
+3. Fix remaining test failures:
 
    - Update import paths in test files to match new component locations
    - Fix mock implementations for relocated components
    - Ensure all tests pass with the new file structure
    - Use Husky bypass scripts when committing changes until tests are fixed
 
-2. Implement Test Performance Improvement Plan
+4. Implement Test Performance Improvement Plan
 
    - Phase 1: Quick Wins
      - ✓ Standardize Mock Implementation
@@ -359,7 +373,7 @@
    - Phase 3: Test Coverage Expansion
    - Phase 4: E2E Testing Implementation
 
-3. Implement Playwright for end-to-end testing
+5. Implement Playwright for end-to-end testing
    - Set up initial configuration
    - Create page object models
    - Implement authentication flow tests
@@ -369,7 +383,7 @@
    - Integrate with CI/CD pipeline
    - Document the implementation
 
-4. Re-enable Husky hooks
+6. Re-enable Husky hooks
    - Fix all failing tests
    - Remove bypass scripts or keep them for emergency use
    - Document the process for the team

@@ -86,6 +86,12 @@
   - [x] Enhanced InvitationManagement to select from school guardians
   - [x] Added backend functions for school guardian management
   - [x] Implemented proper validation and error handling
+- [x] Fixed school owner invitation permissions issue:
+  - [x] Created migration to add school owners to school_guardians table
+  - [x] Implemented database trigger to automatically add school owners when schools are created or updated
+  - [x] Fixed stack depth limit exceeded error when school owners try to send invitations
+  - [x] Created detailed application instructions and bug report
+  - [x] Ensured school owners always have proper permissions to manage their schools
 
 ## Testing and Error Handling
 
@@ -242,6 +248,7 @@
   - [x] BUG-005: Conditional React hooks in TestScores component (P3-medium, resolved)
   - [x] BUG-006: SMTP host configuration error (P3-medium, resolved)
   - [x] BUG-007: Invitation stack depth limit exceeded (P2-high, resolved)
+  - [x] BUG-008: School owner not in school guardians table (P2-high, resolved)
 
 ## Testing Improvements
 
@@ -291,12 +298,13 @@
 31. ~~Implement school guardians management feature (Sprint)~~ ✓
 32. ~~Fix invitation system stack depth limit error (BUG-007)~~ ✓
 33. ~~Apply invitation RLS policy fix to production~~ ✓
-34. Fix remaining test failures after branch merge
-35. Implement Playwright for E2E testing (Project Phase)
-36. Update tests for GuardianDashboard to work with the refactored components
-37. ~~Implement tests for TestScoreManagement component (Deep Work)~~ ✓
-38. ~~Implement tests for TestScores component (Deep Work)~~ ✓
-39. Continue extending error handling to remaining components
-40. Re-enable Husky hooks after fixing test failures
-41. Implement custom user-added courses (Enhancement)
-42. Implement course recommendations (Enhancement)
+34. ~~Fix school owner invitation permissions issue (BUG-008)~~ ✓
+35. Fix remaining test failures after branch merge
+36. Implement Playwright for E2E testing (Project Phase)
+37. Update tests for GuardianDashboard to work with the refactored components
+38. ~~Implement tests for TestScoreManagement component (Deep Work)~~ ✓
+39. ~~Implement tests for TestScores component (Deep Work)~~ ✓
+40. Continue extending error handling to remaining components
+41. Re-enable Husky hooks after fixing test failures
+42. Implement custom user-added courses (Enhancement)
+43. Implement course recommendations (Enhancement)
