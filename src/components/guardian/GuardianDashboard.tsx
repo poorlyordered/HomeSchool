@@ -67,8 +67,20 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
 
   const handleLogout = async () => {
     try {
+      // Wait for signOut to complete including the delay
       await signOut();
-      window.location.href = "/";
+
+      // Add a notification before redirecting
+      setNotification({
+        show: true,
+        type: "success",
+        message: "Logged out successfully. Redirecting...",
+      });
+
+      // Short delay before redirect to show the notification
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 500);
     } catch (error) {
       handleAndDisplayError(error, "GuardianDashboard.handleLogout");
     }
@@ -194,8 +206,8 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
             notification.type === "success"
               ? "bg-green-500"
               : notification.type === "error"
-              ? "bg-red-500"
-              : "bg-blue-500"
+                ? "bg-red-500"
+                : "bg-blue-500"
           } text-white`}
         >
           {notification.message}

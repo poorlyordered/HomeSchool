@@ -15,6 +15,10 @@
 - [x] Fixed student management module update functionality
 - [x] Improved error handling in student management
 - [x] Implemented logout functionality in both Guardian and Student dashboards
+- [x] Fixed logout button functionality:
+  - [x] Enhanced signOut function in auth.ts for better session cleanup
+  - [x] Updated logout handlers in dashboard components with notifications
+  - [x] Fixed React Hook errors in StudentDashboard component
 - [x] Fixed account settings profile name update functionality
 - [x] Added school information editing to account settings for guardians
 - [x] Fixed GuardianDashboard to display actual student data instead of hardcoded values

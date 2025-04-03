@@ -42,8 +42,27 @@ export async function signIn(email: string, password: string) {
 }
 
 export async function signOut() {
-  const { error } = await supabase.auth.signOut();
-  if (error) throw error;
+  try {
+    // Call Supabase signOut
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+
+    // Manually clear localStorage as a fallback
+    localStorage.removeItem("supabase.auth.token");
+
+    // Clear any other auth-related items that might be in localStorage
+    for (const key in localStorage) {
+      if (key.startsWith("supabase.auth.")) {
+        localStorage.removeItem(key);
+      }
+    }
+
+    // Return a small delay to ensure everything is cleared before redirect
+    return new Promise((resolve) => setTimeout(resolve, 100));
+  } catch (error) {
+    console.error("Error during sign out:", error);
+    throw error;
+  }
 }
 
 export async function requestPasswordReset(email: string): Promise<void> {

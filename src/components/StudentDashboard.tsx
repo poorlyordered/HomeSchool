@@ -22,6 +22,22 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
   const [loading, setLoading] = useState(true);
   const [student, setStudent] = useState<Student | null>(null);
   const [showAccountSettings, setShowAccountSettings] = useState(false);
+  // State for notifications
+  const [notification, setNotification] = useState({
+    show: false,
+    type: "success" as "success" | "error" | "info",
+    message: "",
+  });
+
+  // Clear notification after 5 seconds
+  useEffect(() => {
+    if (notification.show) {
+      const timer = setTimeout(() => {
+        setNotification({ ...notification, show: false });
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
 
   useEffect(() => {
     async function loadStudentData() {
@@ -178,9 +194,20 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
 
   const handleLogout = async () => {
     try {
+      // Wait for signOut to complete including the delay
       await signOut();
-      // Force a page reload to clear React state and re-check authentication
-      window.location.href = "/";
+
+      // Add a notification before redirecting
+      setNotification({
+        show: true,
+        type: "success",
+        message: "Logged out successfully. Redirecting...",
+      });
+
+      // Short delay before redirect to show the notification
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 500);
     } catch (error) {
       handleAndDisplayError(error, "StudentDashboard.handleLogout");
     }
@@ -301,6 +328,21 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
           </div>
         </div>
       </main>
+      {/* Notification */}
+      {notification.show && (
+        <div
+          className={`fixed bottom-4 right-4 px-6 py-3 rounded-md shadow-lg ${
+            notification.type === "success"
+              ? "bg-green-500"
+              : notification.type === "error"
+                ? "bg-red-500"
+                : "bg-blue-500"
+          } text-white`}
+        >
+          {notification.message}
+        </div>
+      )}
+
       {showAccountSettings && (
         <AccountSettings
           user={user}
