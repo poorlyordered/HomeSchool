@@ -21,6 +21,7 @@ module.exports = {
     }],
   },
   testMatch: [
+    '**/*.test.{ts,tsx}',
     '**/__tests__/**/*.{ts,tsx}',
     '**/?(*.)+(spec|test).{ts,tsx}'
   ],

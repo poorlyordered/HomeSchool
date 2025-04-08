@@ -66,16 +66,12 @@ if (typeof document !== 'undefined') {
   }
 }
 
-// Fix for React 18 createRoot in testing environment
-const originalRender = global.render;
-global.render = function(...args) {
-  try {
-    return originalRender ? originalRender.apply(this, args) : null;
-  } catch (error) {
-    console.error('Error in render:', error);
-    throw error;
-  }
-};
+// Ensure a root element exists for React Testing Library
+if (typeof document !== 'undefined' && !document.getElementById('root')) {
+  const root = document.createElement('div');
+  root.id = 'root';
+  document.body.appendChild(root);
+}
 
 // Mock for createRoot
 if (typeof window !== 'undefined') {

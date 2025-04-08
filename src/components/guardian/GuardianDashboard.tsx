@@ -152,7 +152,7 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
             ) : (
               <CourseList
                 studentId={selectedStudentId || ""}
-                courses={student.courses}
+                courses={student?.courses || []}
                 onEditCourse={() => {
                   setShowCourseManagement(true);
                 }}
@@ -181,7 +181,7 @@ export function GuardianDashboard({ user }: GuardianDashboardProps) {
               </div>
             ) : (
               <TestScores
-                scores={student.testScores}
+                scores={student?.testScores || []}
                 onDeleteScore={handleDeleteScore}
                 onEditScore={() => setShowTestScoreManagement(true)}
                 studentId={selectedStudentId || ""}

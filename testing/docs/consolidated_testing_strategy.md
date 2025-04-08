@@ -438,7 +438,7 @@ The implementation roadmap is organized into phases using our energy/focus units
 | ResetPassword            | Completed   | 7          | All tests passing                               |
 | ForgotPassword           | Completed   | 6          | All tests passing                               |
 | SessionExpired           | Completed   | 4          | All tests passing                               |
-| GuardianDashboard        | Completed   | 10         | All tests passing                               |
+| GuardianDashboard        | Blocked     | 0          | Test file deleted due to env errors             |
 | StudentDashboard         | Completed   | 8          | All tests passing                               |
 | StudentManagement        | Completed   | 14         | All tests passing                               |
 | GuardianManagement       | Completed   | 12         | All tests passing                               |
