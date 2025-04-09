@@ -28,6 +28,7 @@
 - `.env`: Stores environment-specific variables
 - `vite.config.ts`: Configures build and development settings
 - `README.md`: Provides deployment and setup instructions
+- `playwright.config.ts`: Configures Playwright testing framework
 
 ## Environment Variable Management
 
@@ -121,12 +122,13 @@
   - Component tests follow naming convention: `ComponentName.test.tsx`
   - Helper functions in `src/__tests__/helpers/` directory
   - Standardized mock implementation for Supabase in `src/lib/__mocks__/supabase.ts`
-- Playwright for end-to-end testing (planned):
+  - Playwright tests located in the root `tests/` directory, following naming convention `*.spec.ts`
+- Playwright for integration and end-to-end testing:
   - Page Object Model pattern for UI abstraction
   - Test fixtures for authentication and common setup
   - Visual regression testing capabilities
   - API testing integration
-  - CI/CD integration via GitHub Actions
+  - CI/CD integration via GitHub Actions (planned)
 
 ## Database Patterns
 

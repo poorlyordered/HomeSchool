@@ -28,7 +28,7 @@
 
 - Jest 29.7.0
 - React Testing Library 16.2.0
-- Playwright (planned for E2E testing)
+- Playwright 1.51.1 (for Integration and E2E testing)
 
 ## Environment
 
@@ -67,6 +67,7 @@ All dependencies are managed through package.json with specific version requirem
    - `npm run lint` - Run ESLint
    - `npm run test` - Run Jest tests
    - `npm run format` - Format code with Prettier
+   - `npm run test:e2e` - Run Playwright tests
 
 3. Database Schema
 
@@ -116,12 +117,14 @@ All dependencies are managed through package.json with specific version requirem
      - Linting and formatting checks before commits
      - Type checking and tests before pushing to remote
 
-2. End-to-End Testing (Planned)
-   - Playwright for browser automation
+2. Integration and End-to-End Testing
+   - Playwright for browser automation, integration, and E2E tests
+   - Configuration in `playwright.config.ts`
+   - Tests located in the root `tests/` directory (`*.spec.ts`)
    - Page Object Model pattern for UI abstraction
    - Test fixtures for authentication and common setup
-   - Visual regression testing capabilities
-   - API testing integration
+   - Visual regression testing capabilities (planned)
+   - API testing integration (planned)
 
 ## Troubleshooting
 

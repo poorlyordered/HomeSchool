@@ -8,7 +8,7 @@ This document provides a comprehensive testing strategy for the HomeSchool proje
 
 Our testing approach is built on these core principles:
 
-1. **Comprehensive Coverage**: Test at multiple levels (unit, component, integration, E2E)
+1. **Comprehensive Coverage**: Test at multiple levels (unit, component, integration [using Playwright], E2E [using Playwright])
 2. **Maintainable Tests**: Structure tests for long-term maintainability
 3. **Performance Focus**: Optimize test execution for developer productivity
 4. **Reliability**: Ensure consistent test results across environments
@@ -160,7 +160,7 @@ module.exports = {
    - Implement realistic mock data generation
    - Use consistent mock reset patterns
 
-## End-to-End Testing with Playwright
+## Integration and End-to-End Testing with Playwright
 
 ### Project Structure
 
@@ -184,6 +184,37 @@ testing/
 ```
 
 ### Implementation Approach
+
+Playwright will be used for both **Integration Testing** (verifying interactions between multiple components or systems, including API calls within a user flow) and **End-to-End (E2E) Testing** (simulating complete user journeys through the application).
+
+#### Integration Testing Plan with Playwright
+
+Integration tests will focus on verifying the interactions between specific modules or components, ensuring they work together as expected. Unlike E2E tests which cover full user journeys, integration tests will have a narrower scope, potentially targeting specific workflows or API interactions within a feature.
+
+**Key Areas for Integration Testing:**
+
+1.  **Authentication & Authorization:**
+    *   Verify login redirects correctly to the appropriate dashboard (Guardian/Student).
+    *   Test that API calls made after login have the correct authorization headers.
+    *   Ensure role-based access controls prevent unauthorized actions (e.g., student trying guardian actions).
+2.  **Guardian Dashboard Interactions:**
+    *   Test adding a student and verifying the corresponding API call and UI update.
+    *   Test adding a course for a student and confirming data persistence via API checks.
+    *   Verify test score entry integrates correctly with the backend.
+3.  **Student Dashboard Interactions:**
+    *   Test viewing courses/scores and confirm data fetched via API matches UI display.
+4.  **Course Management & Standard Catalog:**
+    *   Test searching the standard catalog and adding a course, verifying API interactions.
+5.  **Invitation System:**
+    *   Test sending an invitation and verifying the backend state.
+    *   Test accepting an invitation and confirming user role/relationship updates via API checks.
+
+**Approach:**
+
+*   Tests will be located within the `testing/e2e/specs/` directory, possibly in subfolders like `integration/`.
+*   Utilize Playwright's `request` context to directly interact with the backend API for setup or verification where necessary.
+*   Focus on testing the contract between frontend components and backend services.
+*   May involve mocking specific external services if needed, though the primary goal is to test the integration with our actual backend (Supabase).
 
 1. **Page Object Model Pattern**
    - Abstract UI interactions into page classes

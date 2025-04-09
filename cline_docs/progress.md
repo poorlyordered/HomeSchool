@@ -121,9 +121,9 @@
   - [ ] Phase 2: Enhance Mock Stability (Sprint)
   - [ ] Phase 3: Complete Component Test Coverage (Deep Work)
   - [ ] Phase 3: Implement Integration Tests (Deep Work)
-- [ ] Set up Playwright for E2E testing (Project Phase)
+- [x] Set up Playwright for Integration and E2E testing (Project Phase)
   - [x] Create implementation plan
-  - [ ] Initial setup and configuration
+  - [x] Initial setup and configuration (Manual setup completed due to `init` command issues)
   - [ ] Authentication flow tests
   - [ ] Guardian flow tests
   - [ ] Student flow tests
@@ -262,7 +262,8 @@
 29. ~~Create Husky bypass solution for Git operations~~ ✓
 30. ~~Create consolidated testing strategy document (Sprint)~~ ✓
 31. Fix remaining test failures after branch merge
-32. Implement Playwright for E2E testing (Project Phase)
+32. ~~Set up Playwright for Integration and E2E testing (Project Phase)~~ ✓
+33. Implement Playwright tests (Integration & E2E)
 33. ~~Update tests for GuardianDashboard to work with the refactored components~~ (Deleted test file)
 34. ~~Implement tests for TestScoreManagement component (Deep Work)~~ ✓
 35. ~~Implement tests for TestScores component (Deep Work)~~ ✓
